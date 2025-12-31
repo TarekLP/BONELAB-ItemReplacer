@@ -24,9 +24,16 @@ namespace RexmeckItemReplacer
 
 	public class RexmeckReplacer : MelonMod
 	{
-		// Preferences to save the state
+		// Preferences
 		public static MelonPreferences_Category MyModCategory;
 		public static MelonPreferences_Entry<bool> IsReplacerEnabled;
+		public static MelonPreferences_Entry<bool> DebugMode;
+
+		// Category Preferences
+		public static MelonPreferences_Entry<bool> ReplacePistols;
+		public static MelonPreferences_Entry<bool> ReplaceSMGs;
+		public static MelonPreferences_Entry<bool> ReplaceRifles;
+		public static MelonPreferences_Entry<bool> ReplaceShotguns;
 
 		public override void OnInitializeMelon()
 		{
@@ -35,6 +42,12 @@ namespace RexmeckItemReplacer
 			// 1. Setup Preferences
 			MyModCategory = MelonPreferences.CreateCategory("RexmeckReplacer");
 			IsReplacerEnabled = MyModCategory.CreateEntry("Enabled", true);
+			DebugMode = MyModCategory.CreateEntry("DebugMode", false, "Debug Logging");
+
+			ReplacePistols = MyModCategory.CreateEntry("ReplacePistols", true);
+			ReplaceSMGs = MyModCategory.CreateEntry("ReplaceSMGs", true);
+			ReplaceRifles = MyModCategory.CreateEntry("ReplaceRifles", true);
+			ReplaceShotguns = MyModCategory.CreateEntry("ReplaceShotguns", true);
 
 			// 2. Setup Menu
 			CreateBoneMenu();
@@ -44,17 +57,30 @@ namespace RexmeckItemReplacer
 		{
 			Page rootPage = Page.Root;
 
-			// Create a sub-page with your purple color
+			// Root Page (Purple)
 			Page myPage = rootPage.CreatePage("Rexmeck Replacer", new Color(0.6f, 0.0f, 0.8f));
 
-			// Create the toggle
-			myPage.CreateBool("Enable Replacer", Color.white, IsReplacerEnabled.Value, (bool value) =>
+			// Master Toggle
+			myPage.CreateBool("Enable Mod", Color.white, IsReplacerEnabled.Value, (bool value) =>
 			{
 				IsReplacerEnabled.Value = value;
 				MyModCategory.SaveToFile();
-				MelonLogger.Msg($"Replacer toggled: {value}");
+			});
+
+			// Categories Sub-Page
+			Page filtersPage = myPage.CreatePage("Categories", Color.yellow);
+
+			filtersPage.CreateBool("Pistols", Color.white, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("SMGs", Color.white, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Rifles", Color.white, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Shotguns", Color.white, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
+
+			// Debug Toggle
+			myPage.CreateBool("Debug Logging", Color.red, DebugMode.Value, (bool value) =>
+			{
+				DebugMode.Value = value;
+				MyModCategory.SaveToFile();
 			});
 		}
-
 	}
 }
