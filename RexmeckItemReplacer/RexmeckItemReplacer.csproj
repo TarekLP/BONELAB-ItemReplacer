@@ -41,7 +41,6 @@
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="ECHO Copying $(TargetName).dll to Mods folder&#xD;&#xA; COPY &quot;$(TargetPath)&quot; &quot;$(BONELAB_DIR)\Mods&quot;" />
-		<Exec Command="ECHO Copying $(TargetName).pdb to Mods folder&#xD;&#xA; COPY &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(BONELAB_DIR)\Mods&quot;" />
 	</Target>
 
 </Project>
