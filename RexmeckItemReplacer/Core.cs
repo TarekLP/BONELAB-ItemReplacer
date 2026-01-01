@@ -49,7 +49,7 @@ namespace RexmeckItemReplacer
             // 2. Setup Menu
             CreateBoneMenu();
 
-            LoggerInstance.Msg(System.ConsoleColor.Magenta, "Rexmeck Replacer Initialized.");
+            LoggerInstance.Msg(System.ConsoleColor.Magenta, "Item Replacer.");
         }
 
         private static void CreateBoneMenu()
@@ -57,7 +57,7 @@ namespace RexmeckItemReplacer
             Page rootPage = Page.Root;
 
             // Root Page (Purple)
-            Page myPage = rootPage.CreatePage("Rexmeck Replacer", new Color(0.6f, 0.0f, 0.8f));
+            Page myPage = rootPage.CreatePage("Item Replacer",Color.magenta);
 
             // Master Toggle
             myPage.CreateBool("Enable Mod", Color.white, IsReplacerEnabled.Value, (v) =>
@@ -67,12 +67,12 @@ namespace RexmeckItemReplacer
             });
 
             // Categories Sub-Page
-            Page filtersPage = myPage.CreatePage("Categories", Color.yellow);
+            Page filtersPage = myPage.CreatePage("Categories", Color.green);
 
-            filtersPage.CreateBool("Replace Pistols", Color.white, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace SMGs", Color.white, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace ARs", Color.white, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace Shotguns", Color.white, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
+            filtersPage.CreateBool("Replace Pistols", Color.green, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
+            filtersPage.CreateBool("Replace SMGs", Color.green, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
+            filtersPage.CreateBool("Replace ARs", Color.green, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
+            filtersPage.CreateBool("Replace Shotguns", Color.green, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
             filtersPage.CreateBool("Replace NPCs", Color.green, ReplaceNPCs.Value, (v) => { ReplaceNPCs.Value = v; MyModCategory.SaveToFile(); });
 
             // Debug Toggle
@@ -81,6 +81,7 @@ namespace RexmeckItemReplacer
                 DebugMode.Value = v;
                 MyModCategory.SaveToFile();
             });
+
         }
     }
 }
