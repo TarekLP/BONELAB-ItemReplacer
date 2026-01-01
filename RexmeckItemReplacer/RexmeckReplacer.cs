@@ -34,6 +34,7 @@ namespace RexmeckItemReplacer
 		public static MelonPreferences_Entry<bool> ReplaceSMGs;
 		public static MelonPreferences_Entry<bool> ReplaceRifles;
 		public static MelonPreferences_Entry<bool> ReplaceShotguns;
+		public static MelonPreferences_Entry<bool> ReplaceNPCs;
 
 		public override void OnInitializeMelon()
 		{
@@ -48,6 +49,7 @@ namespace RexmeckItemReplacer
 			ReplaceSMGs = MyModCategory.CreateEntry("ReplaceSMGs", true);
 			ReplaceRifles = MyModCategory.CreateEntry("ReplaceRifles", true);
 			ReplaceShotguns = MyModCategory.CreateEntry("ReplaceShotguns", true);
+			ReplaceNPCs = MyModCategory.CreateEntry("ReplaceNPCs", true);
 
 			// 2. Setup Menu
 			CreateBoneMenu();
@@ -70,10 +72,11 @@ namespace RexmeckItemReplacer
 			// Categories Sub-Page
 			Page filtersPage = myPage.CreatePage("Categories", Color.yellow);
 
-			filtersPage.CreateBool("Pistols", Color.white, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
-			filtersPage.CreateBool("SMGs", Color.white, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
-			filtersPage.CreateBool("Rifles", Color.white, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
-			filtersPage.CreateBool("Shotguns", Color.white, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Replace Pistols", Color.white, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Replace SMGs", Color.white, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Replace ARs", Color.white, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Replace Shotguns", Color.white, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
+			filtersPage.CreateBool("Replace NPCs", Color.green, ReplaceNPCs.Value, (v) => { ReplaceNPCs.Value = v; MyModCategory.SaveToFile(); });
 
 			// Debug Toggle
 			myPage.CreateBool("Debug Logging", Color.red, DebugMode.Value, (bool value) =>

@@ -110,11 +110,19 @@ namespace RexmeckItemReplacer
 			{ CommonBarcodes.Guns.DuckSeasonShotgun, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590Cruiser"},
 			{ CommonBarcodes.Guns.FAB, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590"  }
 		};
-		//Menu Building Logic
 
+		private static readonly Dictionary<string, string> NPCs = new Dictionary<string, string>
+		{
+			{ CommonBarcodes.NPCs.Nullbody, "RachelCorp.DestructibleDudes.Spawnable.NullbodyRegeneratable" },
+	//		{ CommonBarcodes.NPCs.NullbodyAgent, "Rexmeck.WeaponPackLT.Spawnable.M1014" },  // - Nullbody Agent not in Gibbable Dudes
+	//		{ CommonBarcodes.NPCs.NullbodyCorrupted, "Rexmeck.WeaponPackLT.Spawnable.M1014" }, // - Nullbody Corrupted not in Gibbable Dudes
+			{ CommonBarcodes.NPCs.EarlyExitZombie, "RachelCorp.DestructibleDudes.Spawnable.EarlyExitRegeneratable"  },
+			{ CommonBarcodes.NPCs.Ford, "RachelCorp.DestructibleDudes.Spawnable.FordGibbable"  }
+		};
 
 		// Gun replacing Logic
 		[HarmonyPrefix]
+		[HarmonyPriority(-10)]
 		[HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
 		[HarmonyPatch(nameof(CrateSpawner.SpawnSpawnable))]
 		public static bool Prefix(CrateSpawner __instance)
@@ -138,6 +146,9 @@ namespace RexmeckItemReplacer
 
 			else if (RexmeckReplacer.ReplaceShotguns.Value && Shotguns.ContainsKey(currentBarcode))
 				targetBarcode = Shotguns[currentBarcode];
+
+			else if (RexmeckReplacer.ReplaceNPCs.Value && NPCs.ContainsKey(currentBarcode))
+				targetBarcode = NPCs[currentBarcode];
 
 
 			// if there is no barcode, there is no replacement.
