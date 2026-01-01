@@ -5,36 +5,43 @@
 		<LangVersion>latest</LangVersion>
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 		<Platforms>AnyCPU;x64</Platforms>
+
+		<LibsDir>$(SolutionDir)Libs\</LibsDir>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Reference Include="0Harmony">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\net6\0Harmony.dll</HintPath>
+			<HintPath>$(LibsDir)0Harmony.dll</HintPath>
 		</Reference>
 		<Reference Include="BoneLib">
-			<HintPath>$(BONELAB_DIR)\Mods\BoneLib.dll</HintPath>
+			<HintPath>$(LibsDir)BoneLib.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2CppInterop.Runtime">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+			<HintPath>$(LibsDir)Il2CppInterop.Runtime.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2Cppmscorlib">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+			<HintPath>$(LibsDir)Il2Cppmscorlib.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2CppSLZ.Marrow">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\Il2CppAssemblies\Il2CppSLZ.Marrow.dll</HintPath>
+			<HintPath>$(LibsDir)Il2CppSLZ.Marrow.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2CppUniTask">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\Il2CppAssemblies\Il2CppUniTask.dll</HintPath>
+			<HintPath>$(LibsDir)Il2CppUniTask.dll</HintPath>
 		</Reference>
 		<Reference Include="MelonLoader">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\net6\MelonLoader.dll</HintPath>
+			<HintPath>$(LibsDir)MelonLoader.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+			<HintPath>$(LibsDir)UnityEngine.CoreModule.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.PhysicsModule">
-			<HintPath>$(BONELAB_DIR)\MelonLoader\Il2CppAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
+			<HintPath>$(LibsDir)UnityEngine.PhysicsModule.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="ECHO Copying $(TargetName).dll to Mods folder&#xD;&#xA; COPY &quot;$(TargetPath)&quot; &quot;$(BONELAB_DIR)\Mods&quot;" />
+		<Exec Command="ECHO Copying $(TargetName).pdb to Mods folder&#xD;&#xA; COPY &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(BONELAB_DIR)\Mods&quot;" />
+	</Target>
 
 </Project>
