@@ -12,7 +12,7 @@ The rexmeck item replacer is a Code mod designed to replace all Vanilla Weapons 
 
 # Credits
 
-- [HAHOOS][https://github.com/HAHOOS] for helping me code the Item replacement Logic and suffering with me
+- [HAHOOS](https://github.com/HAHOOS) for helping me code the Item replacement Logic and suffering with me
 - Rexmeck for creating the weapon pack
 
 # Changelog
