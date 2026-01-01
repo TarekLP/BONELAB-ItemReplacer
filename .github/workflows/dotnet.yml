@@ -1,0 +1,33 @@
+name: BONELAB Workflow
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 6.0.x
+
+# Mainly used for NuGet Packages
+    - name: Install dependencies
+      run: dotnet restore
+# Used to build the Mod for Distribution
+    - name: Build Mod
+      run: dotnet build --configuration Release --no-restore
+
+# Uploads DLL File for easy release making    
+    - name: Grab Release
+      uses: actions/upload-artifact@v4
+      with:
+        name: BONELAB-Mod-Release
+        path: "**/bin/Release/net6.0/RexmeckItemReplacer.dll"
