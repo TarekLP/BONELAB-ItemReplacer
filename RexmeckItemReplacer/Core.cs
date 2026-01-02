@@ -1,6 +1,10 @@
-﻿using MelonLoader;
-using BoneLib.BoneMenu;
-using UnityEngine;
+﻿using System.Linq;
+
+using BoneLib;
+
+using MelonLoader;
+
+using RexmeckItemReplacer.Managers;
 
 namespace RexmeckItemReplacer
 {
@@ -17,70 +21,86 @@ namespace RexmeckItemReplacer
     public class Core : MelonMod
     {
 
-        // Preferences
-        public static MelonPreferences_Category MyModCategory { get; private set; }
-        public static MelonPreferences_Entry<bool> IsReplacerEnabled { get; private set; }
-        public static MelonPreferences_Entry<bool> DebugMode { get; private set; }
-
-        // Category Preferences
-        public static MelonPreferences_Entry<bool> ReplacePistols { get; private set; }
-        public static MelonPreferences_Entry<bool> ReplaceSMGs { get; private set; }
-        public static MelonPreferences_Entry<bool> ReplaceRifles { get; private set; }
-        public static MelonPreferences_Entry<bool> ReplaceShotguns { get; private set; }
-        public static MelonPreferences_Entry<bool> ReplaceNPCs { get; private set; }
-
         public static MelonLogger.Instance Logger { get; private set; }
+
+        private const string RexmeckMP5K = "Rexmeck.WeaponPackLT.Spawnable.MP5K";
+        private const string RexmeckM4A1 = "Rexmeck.WeaponPackLT.Spawnable.M4A1";
+        private static readonly ReplacerConfig RexmeckConfig = new()
+        {
+            ID = "rexmeck-default",
+            Name = "Rexmeck",
+            Color = "#FF00FF",
+            Enabled = true,
+            Categories = []
+        };
 
         public override void OnInitializeMelon()
         {
             Logger = LoggerInstance;
 
-            // 1. Setup Preferences
-            MyModCategory = MelonPreferences.CreateCategory("RexmeckReplacer");
-            IsReplacerEnabled = MyModCategory.CreateEntry("Enabled", true);
-            DebugMode = MyModCategory.CreateEntry("DebugMode", false, "Debug Logging");
+            LoggerInstance.Msg("Setting up preferences");
+            PreferencesManager.Setup();
 
-            ReplacePistols = MyModCategory.CreateEntry("ReplacePistols", true);
-            ReplaceSMGs = MyModCategory.CreateEntry("ReplaceSMGs", true);
-            ReplaceRifles = MyModCategory.CreateEntry("ReplaceRifles", true);
-            ReplaceShotguns = MyModCategory.CreateEntry("ReplaceShotguns", true);
-            ReplaceNPCs = MyModCategory.CreateEntry("ReplaceNPCs", true);
+            LoggerInstance.Msg("Setting up replacers");
+            ReplacerManager.Setup();
+            ReplacerManager.CreateFileWatcher();
+            LoggerInstance.Msg("Adding default ones");
+            if (ReplacerManager.Configs.Any(x => x.ID == RexmeckConfig.ID))
+                ReplacerManager.Unregister(RexmeckConfig.ID, false);
 
-            // 2. Setup Menu
-            CreateBoneMenu();
+            CreateRexmeckCategories();
+            ReplacerManager.Register(RexmeckConfig, true);
 
-            LoggerInstance.Msg(System.ConsoleColor.Magenta, "Rexmeck Replacer Initialized.");
+            LoggerInstance.Msg("Setting up BoneMenu");
+            MenuManager.Setup();
+
+            LoggerInstance.Msg("Initialized.");
         }
 
-        private static void CreateBoneMenu()
+        private static void CreateRexmeckCategories()
         {
-            Page rootPage = Page.Root;
-
-            // Root Page (Purple)
-            Page myPage = rootPage.CreatePage("Rexmeck Replacer", new Color(0.6f, 0.0f, 0.8f));
-
-            // Master Toggle
-            myPage.CreateBool("Enable Mod", Color.white, IsReplacerEnabled.Value, (v) =>
-            {
-                IsReplacerEnabled.Value = v;
-                MyModCategory.SaveToFile();
-            });
-
-            // Categories Sub-Page
-            Page filtersPage = myPage.CreatePage("Categories", Color.yellow);
-
-            filtersPage.CreateBool("Replace Pistols", Color.white, ReplacePistols.Value, (v) => { ReplacePistols.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace SMGs", Color.white, ReplaceSMGs.Value, (v) => { ReplaceSMGs.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace ARs", Color.white, ReplaceRifles.Value, (v) => { ReplaceRifles.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace Shotguns", Color.white, ReplaceShotguns.Value, (v) => { ReplaceShotguns.Value = v; MyModCategory.SaveToFile(); });
-            filtersPage.CreateBool("Replace NPCs", Color.green, ReplaceNPCs.Value, (v) => { ReplaceNPCs.Value = v; MyModCategory.SaveToFile(); });
-
-            // Debug Toggle
-            myPage.CreateBool("Debug Logging", Color.red, DebugMode.Value, (v) =>
-            {
-                DebugMode.Value = v;
-                MyModCategory.SaveToFile();
-            });
+            RexmeckConfig.Categories.Add(new("Pistols", [
+                    new(CommonBarcodes.Guns.Eder22, "Rexmeck.WeaponPackLT.Spawnable.GLOCK17Switch"),
+                    new(CommonBarcodes.Guns.RedEder22, "Rexmeck.WeaponPackLT.Spawnable.GLOCK17"),
+                    new(CommonBarcodes.Guns.M1911, "Rexmeck.WeaponPackLT.Spawnable.1911CombatUnit"),
+                    new(CommonBarcodes.Guns.M9, "Rexmeck.WeaponPackLT.Spawnable.M9A3"),
+                    new(CommonBarcodes.Guns.eHGBlaster, "Rexmeck.WeaponPackLT.Spawnable.FiveSeven"),
+                    new(CommonBarcodes.Guns.P350, "Rexmeck.WeaponPackLT.Spawnable.P226AngelWrap"),
+                    new(CommonBarcodes.Guns.Gruber, "Rexmeck.WeaponPackLT.Spawnable.FiveSeven"),
+                    new(CommonBarcodes.Guns.PT8Alaris, "Rexmeck.WeaponPackLT.Spawnable.DesertEagle")
+                ]));
+            RexmeckConfig.Categories.Add(new("SMGs", [
+                new(CommonBarcodes.Guns.MP5, "Rexmeck.WeaponPackLT.Spawnable.MP5A2"),
+                    new(CommonBarcodes.Guns.MP5KLaser, RexmeckMP5K),
+                    new(CommonBarcodes.Guns.MP5KFlashlight, RexmeckMP5K),
+                    new(CommonBarcodes.Guns.MP5KHolosight, RexmeckMP5K),
+                    new(CommonBarcodes.Guns.MP5KSabrelake, "Rexmeck.WeaponPackLT.Spawnable.MP5SD"),
+                    new(CommonBarcodes.Guns.MP5KIronsights, RexmeckMP5K),
+                    new(CommonBarcodes.Guns.Vector, "Rexmeck.WeaponPackLT.Spawnable.KrissVector"),
+                    new(CommonBarcodes.Guns.UZI, "Rexmeck.WeaponPackLT.Spawnable.P90"),
+                    new(CommonBarcodes.Guns.UMP, "Rexmeck.WeaponPackLT.Spawnable.SMG45")
+                ]));
+            RexmeckConfig.Categories.Add(new("Rifles", [
+                new(CommonBarcodes.Guns.Garand,"Rexmeck.WeaponPackLT.Spawnable.R700"),
+                    new(CommonBarcodes.Guns.M16ACOG, "Rexmeck.WeaponPackLT.Spawnable.AR15BCM"),
+                    new(CommonBarcodes.Guns.M16Holosight, "Rexmeck.WeaponPackLT.Spawnable.SG552AngelWrap"),
+                    new(CommonBarcodes.Guns.M16IronSights, "Rexmeck.WeaponPackLT.Spawnable.M16A1"),
+                    new(CommonBarcodes.Guns.M16LaserForegrip, RexmeckM4A1),
+                    new(CommonBarcodes.Guns.MK18HoloForegrip, "Rexmeck.WeaponPackLT.Spawnable.AKMCustom"),
+                    new(CommonBarcodes.Guns.MK18Holosight, RexmeckM4A1),
+                    new(CommonBarcodes.Guns.MK18IronSights, "Rexmeck.WeaponPackLT.Spawnable.AKM"),
+                    new(CommonBarcodes.Guns.MK18LaserForegrip, RexmeckM4A1),
+                    new(CommonBarcodes.Guns.MK18Sabrelake, RexmeckM4A1),
+                    new(CommonBarcodes.Guns.MK18Naked, "Rexmeck.WeaponPackLT.Spawnable.SG552"),
+                    new(CommonBarcodes.Guns.AKM, "Rexmeck.WeaponPackLT.Spawnable.AKMCustom"),
+                    new(CommonBarcodes.Guns.PDRC, "Rexmeck.WeaponPackLT.Spawnable.P90")
+                ]));
+            RexmeckConfig.Categories.Add(new("Shotguns", [
+                new(CommonBarcodes.Guns.M590A1, "Rexmeck.WeaponPackLT.Spawnable.SPAS12"),
+                    new(CommonBarcodes.Guns.M4, "Rexmeck.WeaponPackLT.Spawnable.M1014"),
+                    new(CommonBarcodes.Guns.DuckSeasonShotgun, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590Cruiser"),
+                    new(CommonBarcodes.Guns.FAB, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590" )
+                ]));
         }
     }
 }

@@ -10,33 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="0Harmony">
-			<HintPath>$(LibsDir)0Harmony.dll</HintPath>
-		</Reference>
-		<Reference Include="BoneLib">
-			<HintPath>$(LibsDir)BoneLib.dll</HintPath>
-		</Reference>
-		<Reference Include="Il2CppInterop.Runtime">
-			<HintPath>$(LibsDir)Il2CppInterop.Runtime.dll</HintPath>
-		</Reference>
-		<Reference Include="Il2Cppmscorlib">
-			<HintPath>$(LibsDir)Il2Cppmscorlib.dll</HintPath>
-		</Reference>
-		<Reference Include="Il2CppSLZ.Marrow">
-			<HintPath>$(LibsDir)Il2CppSLZ.Marrow.dll</HintPath>
-		</Reference>
-		<Reference Include="Il2CppUniTask">
-			<HintPath>$(LibsDir)Il2CppUniTask.dll</HintPath>
-		</Reference>
-		<Reference Include="MelonLoader">
-			<HintPath>$(LibsDir)MelonLoader.dll</HintPath>
-		</Reference>
-		<Reference Include="UnityEngine.CoreModule">
-			<HintPath>$(LibsDir)UnityEngine.CoreModule.dll</HintPath>
-		</Reference>
-		<Reference Include="UnityEngine.PhysicsModule">
-			<HintPath>$(LibsDir)UnityEngine.PhysicsModule.dll</HintPath>
-		</Reference>
+		<Reference Include="$(LibsDir)*.dll" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

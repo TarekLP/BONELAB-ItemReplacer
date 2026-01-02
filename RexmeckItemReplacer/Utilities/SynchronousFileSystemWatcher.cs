@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 using MelonLoader;
 
-namespace KeepInventory.Utilities
+namespace RexmeckItemReplacer.Utilities
 {
     public sealed class SynchronousFileSystemWatcher : IDisposable
     {
@@ -93,37 +93,13 @@ namespace KeepInventory.Utilities
                     try
                     {
                         if (@event is RenamedEventArgs renamed)
-                        {
                             Renamed?.Invoke(this, renamed);
-                        }
                         else if (@event is FileSystemEventArgs fse_args)
-                        {
-                            if (fse_args.ChangeType == WatcherChangeTypes.Created)
-                                Created?.Invoke(this, fse_args);
-                            else if (fse_args.ChangeType == WatcherChangeTypes.Deleted)
-                                Deleted?.Invoke(this, fse_args);
-                            else if (fse_args.ChangeType == WatcherChangeTypes.Changed)
-                                Changed?.Invoke(this, fse_args);
-                        }
+                            TriggerProperEvent(fse_args);
                         else if (@event is ErrorEventArgs error)
-                        {
                             Error?.Invoke(this, error);
-                        }
                         else if (@event is EventArgs args)
-                        {
-                            try
-                            {
-                                Disposed?.Invoke(this, args);
-                            }
-                            catch (Exception ex)
-                            {
-                                MelonLogger.Error("SynchronousFileSystemWatcher | An unexpected error has occurred while running Disposed event", ex);
-                            }
-                            finally
-                            {
-                                Dispose();
-                            }
-                        }
+                            WatcherDisposed(args);
                     }
                     catch (Exception ex)
                     {
@@ -134,6 +110,32 @@ namespace KeepInventory.Utilities
                         _Queue.RemoveAt(i);
                     }
                 }
+            }
+        }
+
+        private void TriggerProperEvent(FileSystemEventArgs args)
+        {
+            if (args.ChangeType == WatcherChangeTypes.Created)
+                Created?.Invoke(this, args);
+            else if (args.ChangeType == WatcherChangeTypes.Deleted)
+                Deleted?.Invoke(this, args);
+            else if (args.ChangeType == WatcherChangeTypes.Changed)
+                Changed?.Invoke(this, args);
+        }
+
+        private void WatcherDisposed(EventArgs args)
+        {
+            try
+            {
+                Disposed?.Invoke(this, args);
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Error("SynchronousFileSystemWatcher | An unexpected error has occurred while running Disposed event", ex);
+            }
+            finally
+            {
+                Dispose();
             }
         }
 
@@ -148,6 +150,7 @@ namespace KeepInventory.Utilities
                 MelonLogger.Error("SynchronousFileSystemWatcher | An exception occurred while disposing of FileSystemWatcher", ex);
             }
             MelonEvents.OnUpdate.Unsubscribe(Update);
+            Disposed?.Invoke(this, EventArgs.Empty);
             GC.SuppressFinalize(this);
         }
     }
