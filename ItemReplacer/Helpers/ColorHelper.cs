@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace RexmeckItemReplacer.Helpers
+namespace ItemReplacer.Helpers
 {
     public static class ColorHelper
     {

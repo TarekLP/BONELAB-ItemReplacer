@@ -2,7 +2,7 @@
 
 using MelonLoader;
 
-using RexmeckItemReplacer;
+using ItemReplacer;
 
 #region MelonLoader
 [assembly: MelonInfo(typeof(Core), ModInfo.Name, ModInfo.Version, ModInfo.Company, ModInfo.DownloadLink)]

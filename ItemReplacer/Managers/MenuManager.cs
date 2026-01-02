@@ -3,11 +3,11 @@ using System.Linq;
 
 using BoneLib.BoneMenu;
 
-using RexmeckItemReplacer.Helpers;
+using ItemReplacer.Helpers;
 
 using UnityEngine;
 
-namespace RexmeckItemReplacer.Managers
+namespace ItemReplacer.Managers
 {
     public static class MenuManager
     {

@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 using MelonLoader;
 
-namespace RexmeckItemReplacer.Utilities
+namespace ItemReplacer.Utilities
 {
     public sealed class SynchronousFileSystemWatcher : IDisposable
     {

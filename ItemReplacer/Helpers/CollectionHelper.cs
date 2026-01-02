@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RexmeckItemReplacer.Helpers
+namespace ItemReplacer.Helpers
 {
     public static class CollectionHelper
     {

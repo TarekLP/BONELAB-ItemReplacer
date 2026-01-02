@@ -10,7 +10,7 @@ using Il2CppSystem;
 
 using MelonLoader;
 
-using RexmeckItemReplacer.Managers;
+using ItemReplacer.Managers;
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-namespace RexmeckItemReplacer.Patches
+namespace ItemReplacer.Patches
 {
 
     [HarmonyPatch(typeof(CrateSpawner))]

@@ -7,12 +7,12 @@ using System.Text.Json;
 
 using Newtonsoft.Json;
 
-using RexmeckItemReplacer.Helpers;
-using RexmeckItemReplacer.Utilities;
+using ItemReplacer.Helpers;
+using ItemReplacer.Utilities;
 
 using JsonException = System.Text.Json.JsonException;
 
-namespace RexmeckItemReplacer.Managers
+namespace ItemReplacer.Managers
 {
     // This shit is just copied from KeepInventory
     // I am NOT doing this from scratch, just doing this in KeepInventory was shitty enough and took eternity to work

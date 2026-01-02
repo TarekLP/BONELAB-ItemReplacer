@@ -4,9 +4,9 @@ using BoneLib;
 
 using MelonLoader;
 
-using RexmeckItemReplacer.Managers;
+using ItemReplacer.Managers;
 
-namespace RexmeckItemReplacer
+namespace ItemReplacer
 {
     public static class ModInfo
     {

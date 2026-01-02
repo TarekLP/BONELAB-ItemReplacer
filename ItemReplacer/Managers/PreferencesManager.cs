@@ -3,7 +3,7 @@
 using MelonLoader;
 using MelonLoader.Utils;
 
-namespace RexmeckItemReplacer.Managers
+namespace ItemReplacer.Managers
 {
     public static class PreferencesManager
     {
