@@ -11,6 +11,7 @@ using ItemReplacer.Helpers;
 using ItemReplacer.Utilities;
 
 using JsonException = System.Text.Json.JsonException;
+using System.ComponentModel;
 
 namespace ItemReplacer.Managers
 {
@@ -39,6 +40,7 @@ namespace ItemReplacer.Managers
                 Directory.CreateDirectory(ConfigsDir);
             }
 
+            Core.Logger.Msg("Loading configs from directory...");
             var files = Directory.GetFiles(ConfigsDir);
             if (files?.Length > 0)
             {
@@ -198,13 +200,13 @@ namespace ItemReplacer.Managers
             if (!LastWrite.ContainsKey(file))
             {
                 LastWrite.Add(file, write);
-                return false;
+                return IsIgnored(file);
             }
             else
             {
                 bool equal = LastWrite[file] == write;
                 LastWrite[file] = write;
-                return equal;
+                return equal || IsIgnored(file);
             }
         }
 
@@ -215,7 +217,7 @@ namespace ItemReplacer.Managers
             if (!IgnoredFilePaths.Any())
                 return false;
 
-            bool pass = IgnoredFilePaths.Any(x =>
+            return IgnoredFilePaths.Any(x =>
             {
                 var _path = Path.GetFullPath(x);
                 bool equal = _path == fullPath;
@@ -224,8 +226,6 @@ namespace ItemReplacer.Managers
                 return equal;
             }
             );
-
-            return pass;
         }
 
         internal static string ReadAllTextUsedFile(string path)
@@ -241,27 +241,28 @@ namespace ItemReplacer.Managers
             return null;
         }
 
+        // TODO: Improve file handling, as sometimes it doesn't register the changes correctly
         internal static void CreateFileWatcher()
         {
             LastWrite.Clear();
             FileSystemWatcher?.Dispose();
-            FileSystemWatcher = new SynchronousFileSystemWatcher(ConfigsDir) { EnableRaisingEvents = true };
+            FileSystemWatcher = new SynchronousFileSystemWatcher(ConfigsDir)
+            {
+                EnableRaisingEvents = true,
+                Filter = "*.json"
+            };
             FileSystemWatcher.Error += (x, y) => Core.Logger.Error("An unexpected error was thrown by the file watcher for the configs", y.GetException());
             FileSystemWatcher.Deleted += (x, y) =>
             {
                 if (IsIgnored(y.FullPath)) return;
                 LastWrite.Remove(y.FullPath);
-                if (y.FullPath.EndsWith(".json"))
-                {
-                    Core.Logger.Msg($"{y.Name} has been deleted, unregistering replacer");
-                    foreach (var item in Configs.Where(x => x.FilePath == y.FullPath))
-                        Unregister(item.ID, false);
-                }
+                Core.Logger.Msg($"{y.Name} has been deleted, unregistering replacer");
+                Configs.Where(x => x.FilePath == y.FullPath).ForEach(x => Unregister(x.ID, false));
             };
             FileSystemWatcher.Created += (x, y) =>
             {
                 if (IsIgnored(y.FullPath)) return;
-                if (y.FullPath.EndsWith(".json") && Check(y.FullPath))
+                if (Check(y.FullPath))
                 {
                     Core.Logger.Msg($"{y.Name} has been created, registering replacer");
                     Register(y.FullPath);
@@ -270,23 +271,20 @@ namespace ItemReplacer.Managers
             FileSystemWatcher.Changed += (x, y) =>
             {
                 if (PreventDoubleTrigger(y.FullPath)) return;
-                if (IsIgnored(y.FullPath)) return;
-                if (y.FullPath.EndsWith(".json"))
+                if (Check(y.FullPath))
                 {
-                    if (Check(y.FullPath))
-                    {
-                        Core.Logger.Msg($"{y.Name} has been modified, updating");
-                        var configs = Configs.Where(x => x.FilePath == y.FullPath && x.IsFileWatcherEnabled);
-                        configs.ForEach(x => x.Update(y.FullPath));
-                    }
-                    else
-                    {
-                        Core.Logger.Error($"{y.Name} was updated, but is not suitable to be a replacer");
-                        var configs = Configs.Where(x => x.FilePath == y.FullPath && x.IsFileWatcherEnabled);
-                        configs.ForEach(x => Unregister(x.ID));
-                    }
-                    MenuManager.SetupReplacers();
+                    Core.Logger.Msg($"{y.Name} has been modified, updating");
+                    var configs = Configs.Where(x => x.AutoUpdate(y.FullPath));
+                    configs.ForEach(x => x.Update(y.FullPath));
                 }
+                else
+                {
+                    Core.Logger.Error($"{y.Name} was updated, but is not suitable to be a replacer");
+                    var configs = Configs.Where(x => x.AutoUpdate(y.FullPath));
+                    configs.ForEach(x => Unregister(x.ID));
+                }
+                MenuManager.SetupReplacers();
+
             };
             FileSystemWatcher.Renamed += (x, y) =>
             {
@@ -297,12 +295,10 @@ namespace ItemReplacer.Managers
                     LastWrite.Remove(y.OldFullPath);
                     LastWrite.Add(y.FullPath, old);
                 }
-                if (y.FullPath.EndsWith(".json"))
-                {
-                    Core.Logger.Msg($"{y.OldName} has been renamed to {y.Name}, updating information");
-                    var configs = Configs.Where(x => x.FilePath == y.OldFullPath);
-                    configs.ForEach(x => x.FilePath = y.FullPath);
-                }
+                Core.Logger.Msg($"{y.OldName} has been renamed to {y.Name}, updating information");
+                var configs = Configs.Where(x => x.FilePath == y.OldFullPath);
+                configs.ForEach(x => x.FilePath = y.FullPath);
+
             };
         }
 
@@ -382,6 +378,9 @@ namespace ItemReplacer.Managers
         [JsonProperty("categories")]
         public List<ReplacerCategory> Categories { get; set; }
 
+        internal bool AutoUpdate(string path) => FilePath == path && IsFileWatcherEnabled;
+
+
         public void SaveToFile(bool printMessage = true)
         {
             if (!string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath))
@@ -401,9 +400,9 @@ namespace ItemReplacer.Managers
                         {
                             if (printMessage) Core.Logger.Msg($"Saved '{ID}' to file successfully!");
                         }
-                        else
+                        else if (printMessage)
                         {
-                            if (printMessage) Core.Logger.Error($"Failed to save '{ID}' to file", task.Exception);
+                            Core.Logger.Error($"Failed to save '{ID}' to file", task.Exception);
                         }
                     });
                 }
@@ -515,12 +514,16 @@ namespace ItemReplacer.Managers
     }
 
     [method: JsonConstructor]
-    public class ReplacerEntry(string original, string replaceWith)
+    public class ReplacerEntry(string original, string replaceWith, bool isRegEx = false)
     {
         [JsonProperty("original")]
         public string Original { get; set; } = original;
 
         [JsonProperty("replaceWith")]
         public string ReplaceWith { get; set; } = replaceWith;
+
+        [DefaultValue(false)]
+        [JsonProperty("isRegEx", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool IsRegEx { get; set; } = isRegEx;
     }
 }

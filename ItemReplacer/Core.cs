@@ -70,7 +70,7 @@ namespace ItemReplacer
                     new(CommonBarcodes.Guns.PT8Alaris, "Rexmeck.WeaponPackLT.Spawnable.DesertEagle")
                 ]));
             RexmeckConfig.Categories.Add(new("SMGs", [
-                new(CommonBarcodes.Guns.MP5, "Rexmeck.WeaponPackLT.Spawnable.MP5A2"),
+                    new(CommonBarcodes.Guns.MP5, "Rexmeck.WeaponPackLT.Spawnable.MP5A2"),
                     new(CommonBarcodes.Guns.MP5KLaser, RexmeckMP5K),
                     new(CommonBarcodes.Guns.MP5KFlashlight, RexmeckMP5K),
                     new(CommonBarcodes.Guns.MP5KHolosight, RexmeckMP5K),
@@ -81,7 +81,7 @@ namespace ItemReplacer
                     new(CommonBarcodes.Guns.UMP, "Rexmeck.WeaponPackLT.Spawnable.SMG45")
                 ]));
             RexmeckConfig.Categories.Add(new("Rifles", [
-                new(CommonBarcodes.Guns.Garand,"Rexmeck.WeaponPackLT.Spawnable.R700"),
+                    new(CommonBarcodes.Guns.Garand,"Rexmeck.WeaponPackLT.Spawnable.R700"),
                     new(CommonBarcodes.Guns.M16ACOG, "Rexmeck.WeaponPackLT.Spawnable.AR15BCM"),
                     new(CommonBarcodes.Guns.M16Holosight, "Rexmeck.WeaponPackLT.Spawnable.SG552AngelWrap"),
                     new(CommonBarcodes.Guns.M16IronSights, "Rexmeck.WeaponPackLT.Spawnable.M16A1"),
@@ -96,7 +96,7 @@ namespace ItemReplacer
                     new(CommonBarcodes.Guns.PDRC, "Rexmeck.WeaponPackLT.Spawnable.P90")
                 ]));
             RexmeckConfig.Categories.Add(new("Shotguns", [
-                new(CommonBarcodes.Guns.M590A1, "Rexmeck.WeaponPackLT.Spawnable.SPAS12"),
+                    new(CommonBarcodes.Guns.M590A1, "Rexmeck.WeaponPackLT.Spawnable.SPAS12"),
                     new(CommonBarcodes.Guns.M4, "Rexmeck.WeaponPackLT.Spawnable.M1014"),
                     new(CommonBarcodes.Guns.DuckSeasonShotgun, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590Cruiser"),
                     new(CommonBarcodes.Guns.FAB, "Rexmeck.WeaponPackLT.Spawnable.Mossberg590" )

@@ -61,15 +61,15 @@ namespace ItemReplacer.Patches
         {
             foreach (var config in ReplacerManager.Configs)
             {
-                if (!config.Enabled)
+                if (config?.Enabled != true)
                     continue;
 
                 foreach (var category in config.Categories)
                 {
-                    if (!category.Enabled)
+                    if (category?.Enabled != true)
                         continue;
 
-                    var replacement = category.Entries.FirstOrDefault(e => Regex.IsMatch(barcode, e.Original));
+                    var replacement = category?.Entries?.FirstOrDefault(e => e.IsRegEx ? Regex.IsMatch(barcode, e.Original) : barcode == e.Original);
                     if (replacement != null)
                         return replacement.ReplaceWith;
                 }

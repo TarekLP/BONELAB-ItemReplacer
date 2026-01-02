@@ -14,6 +14,9 @@ namespace ItemReplacer.Helpers
             if (hex.StartsWith('#'))
                 hex = hex[1..];
 
+            if (hex.Length != 6 && hex.Length != 8)
+                throw new ArgumentException("HEX color must be 6 or 8 characters long.");
+
             var r = Convert.ToInt32(hex[..2], 16) / 255f;
             var g = Convert.ToInt32(hex[2..4], 16) / 255f;
             var b = Convert.ToInt32(hex[4..6], 16) / 255f;
@@ -22,6 +25,20 @@ namespace ItemReplacer.Helpers
                 a = Convert.ToInt32(hex[6..8], 16) / 255f;
 
             return new Color(r, g, b, a);
+        }
+
+        public static bool TryFromHEX(this string hex, out Color color)
+        {
+            try
+            {
+                color = FromHEX(hex);
+                return true;
+            }
+            catch
+            {
+                color = default;
+                return false;
+            }
         }
     }
 }

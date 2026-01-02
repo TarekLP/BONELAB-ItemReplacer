@@ -60,7 +60,9 @@ namespace ItemReplacer.Managers
                 Page page = null;
                 if (!ReplacerPages.ContainsKey(config.ID))
                 {
-                    page = ReplacersPage.CreatePage(config.Name, config.Color.FromHEX(), createLink: false);
+                    if (!config.Color.TryFromHEX(out Color color))
+                        Core.Logger.Error($"Color for '{config.ID}' is invalid");
+                    page = ReplacersPage.CreatePage(config.Name, color, createLink: false);
                     ReplacerPages[config.ID] = page;
                 }
                 else
