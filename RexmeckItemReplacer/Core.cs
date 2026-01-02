@@ -10,11 +10,11 @@ namespace RexmeckItemReplacer
 {
     public static class ModInfo
     {
-        public const string Name = "RexmeckGunReplacer";
+        public const string Name = "ItemReplacer";
         public const string Author = "Tarek";
         public const string Version = "1.0.0";
-        public const string Company = "Tarek";
-        public const string Description = "Replaces vanilla BONELAB guns with Rexmeck's Weapons that are far better (in my opinion).";
+        public const string Company = "T&H Modding";
+        public const string Description = "Replaces Items in BONELAB with user specified replacements.";
         public const string DownloadLink = null;
     }
 
