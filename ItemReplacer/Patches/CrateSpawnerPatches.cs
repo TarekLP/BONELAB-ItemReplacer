@@ -1,23 +1,13 @@
-﻿using BoneLib;
-
-using HarmonyLib;
+﻿using HarmonyLib;
 
 using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
-using Il2CppSystem;
-
-using MelonLoader;
-
 using ItemReplacer.Managers;
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using UnityEngine;
 
@@ -37,19 +27,19 @@ namespace ItemReplacer.Patches
         {
             // Is the mod enabled or disabled?
             if (PreferencesManager.Enabled?.Value != true) return true;
+
+            // if there is no barcode, there is no replacement.
             if (__instance.spawnableCrateReference?.Barcode == null) return true;
 
             string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
             string targetBarcode = GetReplacement(currentBarcode);
 
-
-            // if there is no barcode, there is no replacement.
-            if (__instance.spawnableCrateReference?.Barcode == null) return true;
-
-            //While the barcode isnt null, there is a replacement.
+            // While the barcode isnt null, there is a replacement.
             if (targetBarcode != null)
             {
-                Core.Logger.Msg($"Replacing with: {targetBarcode} (Original: {currentBarcode})");
+                if (PreferencesManager.IsDebug())
+                    Core.Logger.Msg($"Replacing with: {targetBarcode} (Original: {currentBarcode})");
+
                 SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation);
                 return false;
 

@@ -16,6 +16,17 @@ namespace ItemReplacer.Managers
 
         public static string ConfigFile => Path.Combine(ConfigDir, "Config.cfg");
 
+        public static bool IsDebug()
+        {
+            if (DebugMode?.Value == true)
+                return true;
+
+            if (MelonDebug.IsEnabled())
+                return true;
+
+            return false;
+        }
+
         public static void Setup()
         {
             EnsureFolder();

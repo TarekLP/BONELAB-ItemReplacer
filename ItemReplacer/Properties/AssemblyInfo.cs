@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
-
 using MelonLoader;
-
 using ItemReplacer;
 
 #region MelonLoader
