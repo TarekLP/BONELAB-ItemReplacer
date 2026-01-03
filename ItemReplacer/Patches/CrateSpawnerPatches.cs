@@ -41,7 +41,7 @@ namespace ItemReplacer.Patches
                 var crateRef = new SpawnableCrateReference(targetBarcode);
                 if (crateRef?.TryGetCrate(out var crate) != true)
                 {
-                    Core.Logger.Error("Barcode does not exist in-game, the mod may not be installed. Not replacing item.");
+                    Core.Logger.Error($"Barcode does not exist in-game, the mod may not be installed. Not replacing item. (Barcode: {targetBarcode})");
                     return true;
                 }
 
