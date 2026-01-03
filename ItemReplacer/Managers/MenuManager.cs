@@ -26,13 +26,13 @@ namespace ItemReplacer.Managers
             ModPage.CreateBool("Enable Mod", new Color(0, 1, 0), PreferencesManager.Enabled.Value, (v) =>
             {
                 PreferencesManager.Enabled.Value = v;
-                PreferencesManager.Category.SaveToFile();
+                PreferencesManager.Category.SaveToFile(false);
             });
 
             ModPage.CreateBool("Debug Logging", Color.cyan, PreferencesManager.DebugMode.Value, (v) =>
             {
                 PreferencesManager.DebugMode.Value = v;
-                PreferencesManager.Category.SaveToFile();
+                PreferencesManager.Category.SaveToFile(false);
             });
             ReplacersPage ??= ModPage.CreatePage("Replacers", Color.yellow);
             SetupReplacers();

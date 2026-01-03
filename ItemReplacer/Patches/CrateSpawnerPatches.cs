@@ -29,16 +29,24 @@ namespace ItemReplacer.Patches
             if (PreferencesManager.Enabled?.Value != true) return true;
 
             // if there is no barcode, there is no replacement.
-            if (__instance.spawnableCrateReference?.Barcode == null) return true;
+            if (__instance?.spawnableCrateReference?.Barcode == null) return true;
 
             string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
+            string currentTitle = __instance.spawnableCrateReference.Crate.Title;
             string targetBarcode = GetReplacement(currentBarcode);
 
             // While the barcode isnt null, there is a replacement.
             if (targetBarcode != null)
             {
+                var crateRef = new SpawnableCrateReference(targetBarcode);
+                if (crateRef?.TryGetCrate(out var crate) != true)
+                {
+                    Core.Logger.Error("Barcode does not exist in-game, the mod may not be installed. Not replacing item.");
+                    return true;
+                }
+
                 if (PreferencesManager.IsDebug())
-                    Core.Logger.Msg($"Replacing with: {targetBarcode} (Original: {currentBarcode})");
+                    Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
 
                 SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation);
                 return false;
@@ -85,5 +93,9 @@ namespace ItemReplacer.Patches
             AssetSpawner.Register(spawnable);
             AssetSpawner.Spawn(spawnable, position, rotation, scale, null, false, groupId, null, null);
         }
+
+        private static string RemoveUnityRichText(this string text)
+            => Regex.Replace(text, "<.*?>", string.Empty);
+
     }
 }
