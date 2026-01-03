@@ -6,7 +6,7 @@ The Item Replacer is a code mod designed to replace certain Items with user spec
 # Features
 - Replaces Items with user specified counterparts (Even works on most Modded Maps)
 - Features a menu to customize the mods behaviour
-
+- Includes template and barcode list for easier replacements.
 # How to Install
 - Drag and Drop Folder into your MelonLoader Mods folder
 
