@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated schema for Root",
+  "$id": "https://raw.githubusercontent.com/TarekLP/BONELAB-ItemReplacer/refs/heads/master/schema.json",
+  "title": "Schema for ItemReplacer Config files",
   "type": "object",
   "properties": {
     "name": {
