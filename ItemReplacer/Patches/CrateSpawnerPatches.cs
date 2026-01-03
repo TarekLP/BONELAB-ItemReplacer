@@ -94,7 +94,7 @@ namespace ItemReplacer.Patches
             AssetSpawner.Spawn(spawnable, position, rotation, scale, null, false, groupId, null, null);
         }
 
-        private static string RemoveUnityRichText(this string text)
+        public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);
 
     }

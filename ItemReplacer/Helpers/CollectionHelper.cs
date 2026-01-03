@@ -16,5 +16,11 @@ namespace ItemReplacer.Helpers
             foreach (var item in enumerable)
                 action?.Invoke(item);
         }
+
+        public static void ForEach<T>(this Il2CppSystem.Collections.Generic.HashSet<T> hashSet, Action<T> action)
+        {
+            foreach (var item in hashSet)
+                action?.Invoke(item);
+        }
     }
 }
