@@ -274,14 +274,18 @@ namespace ItemReplacer.Managers
                 if (Check(y.FullPath))
                 {
                     Core.Logger.Msg($"{y.Name} has been modified, updating");
+                    if (!Update(y.FullPath, x => x.Update(y.FullPath), true))
+                    {
+                        Core.Logger.Msg($"{y.Name} has been modified, but wasn't registered. Registering replacer");
+                        Register(y.FullPath);
+                    }
                     var configs = Configs.Where(x => x.AutoUpdate(y.FullPath));
                     configs.ForEach(x => x.Update(y.FullPath));
                 }
                 else
                 {
                     Core.Logger.Error($"{y.Name} was updated, but is not suitable to be a replacer");
-                    var configs = Configs.Where(x => x.AutoUpdate(y.FullPath));
-                    configs.ForEach(x => Unregister(x.ID));
+                    Update(y.FullPath, x => Unregister(x.ID), true);
                 }
                 MenuManager.SetupReplacers();
 
@@ -296,10 +300,30 @@ namespace ItemReplacer.Managers
                     LastWrite.Add(y.FullPath, old);
                 }
                 Core.Logger.Msg($"{y.OldName} has been renamed to {y.Name}, updating information");
-                var configs = Configs.Where(x => x.FilePath == y.OldFullPath);
-                configs.ForEach(x => x.FilePath = y.FullPath);
+                if (!Update(y.OldFullPath, x => x.FilePath = y.FullPath) && Check(y.FullPath))
+                {
+                    Core.Logger.Msg($"{y.Name} has been renamed to {y.Name}, but wasn't registered. Registering replacer");
+                    Register(y.FullPath);
+
+                }
 
             };
+        }
+
+        internal static bool Update(string filePath, Action<ReplacerConfig> action, bool requireFileWatcherOption = false)
+        {
+            var configs = Configs.Where(x => x.FilePath == filePath);
+            if (requireFileWatcherOption && configs.ToList().TrueForAll(x => !x.IsFileWatcherEnabled))
+                return true;
+
+            if (configs.Any())
+            {
+                foreach (var config in configs)
+                    action(config);
+
+                return true;
+            }
+            return false;
         }
 
         internal static bool IsJSON(string text)
