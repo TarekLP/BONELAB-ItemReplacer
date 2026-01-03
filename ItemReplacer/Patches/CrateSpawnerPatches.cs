@@ -1,13 +1,16 @@
-﻿using HarmonyLib;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
+
+using HarmonyLib;
+
+using Il2CppCysharp.Threading.Tasks;
 
 using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
 using ItemReplacer.Managers;
-
-using System.Linq;
-using System.Text.RegularExpressions;
+using ItemReplacer.Utilities;
 
 using UnityEngine;
 
@@ -20,10 +23,10 @@ namespace ItemReplacer.Patches
 
         // Gun replacing Logic
         [HarmonyPrefix]
-        [HarmonyPriority(-10)]
+        [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnable))]
-        public static bool Prefix(CrateSpawner __instance)
+        public static bool Prefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
             // Is the mod enabled or disabled?
             if (PreferencesManager.Enabled?.Value != true) return true;
@@ -48,7 +51,16 @@ namespace ItemReplacer.Patches
                 if (PreferencesManager.IsDebug())
                     Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
 
-                SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation);
+                if (!Fusion.IsConnected)
+                {
+                    SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation);
+                }
+                else
+                {
+                    bool _continue = Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
+                    __result = res;
+                    return _continue;
+                }
                 return false;
 
             }
