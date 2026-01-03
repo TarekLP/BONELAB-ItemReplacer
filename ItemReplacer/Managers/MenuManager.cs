@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using BoneLib.BoneMenu;
 
+using Il2CppSLZ.Marrow.Warehouse;
+
 using ItemReplacer.Helpers;
+using ItemReplacer.Patches;
 
 using UnityEngine;
 
@@ -26,13 +30,34 @@ namespace ItemReplacer.Managers
             ModPage.CreateBool("Enable Mod", new Color(0, 1, 0), PreferencesManager.Enabled.Value, (v) =>
             {
                 PreferencesManager.Enabled.Value = v;
-                PreferencesManager.Category.SaveToFile();
+                PreferencesManager.Category.SaveToFile(false);
             });
 
             ModPage.CreateBool("Debug Logging", Color.cyan, PreferencesManager.DebugMode.Value, (v) =>
             {
                 PreferencesManager.DebugMode.Value = v;
-                PreferencesManager.Category.SaveToFile();
+                PreferencesManager.Category.SaveToFile(false);
+            });
+            ModPage.CreateFunction("Dump all barcodes to TXT file", Color.red, () =>
+            {
+                Core.Logger.Msg("Dumping all barcodes...");
+                List<string> barcodes = [];
+                AssetWarehouse.Instance.gamePallets.ForEach(x =>
+                {
+                    if (AssetWarehouse.Instance.TryGetPallet(x, out Pallet pallet))
+                    {
+                        pallet.Crates.ForEach((System.Action<Crate>)(crate =>
+                        {
+                            if (crate.Barcode != null)
+                                barcodes.Add($"{crate.Title.RemoveUnityRichText()} - {crate.Barcode.ID}");
+                        }));
+                    }
+                });
+                using var file = File.CreateText(Path.Combine(PreferencesManager.ConfigDir, "dump.txt"));
+                barcodes.ForEach(x => file.WriteLine(x));
+                file.Flush();
+                file.Close();
+                Core.Logger.Msg($"Dumped {barcodes.Count} barcodes to dump.txt");
             });
             ReplacersPage ??= ModPage.CreatePage("Replacers", Color.yellow);
             SetupReplacers();
