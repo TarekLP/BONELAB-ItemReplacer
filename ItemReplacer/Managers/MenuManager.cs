@@ -38,6 +38,11 @@ namespace ItemReplacer.Managers
                 PreferencesManager.DebugMode.Value = v;
                 PreferencesManager.Category.SaveToFile(false);
             });
+            ModPage.CreateBool("LabFusion Support", Color.cyan, PreferencesManager.FusionSupport.Value, (v) =>
+            {
+                PreferencesManager.FusionSupport.Value = v;
+                PreferencesManager.Category.SaveToFile(false);
+            }).SetTooltip(PreferencesManager.FusionSupport.Description);
             ModPage.CreateFunction("Dump all barcodes to TXT file", Color.red, () =>
             {
                 Core.Logger.Msg("Dumping all barcodes...");

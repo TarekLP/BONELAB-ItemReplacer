@@ -99,6 +99,7 @@ namespace ItemReplacer.Utilities
         internal static bool HandleFusionCrateSpawner(string barcode, CrateSpawner spawner, out UniTask<Poolee> res)
         {
             res = null;
+
             // If this scene is unsynced, the spawner can function as normal.
             if (!LabFusion.Scene.NetworkSceneManager.IsLevelNetworked)
                 return true;

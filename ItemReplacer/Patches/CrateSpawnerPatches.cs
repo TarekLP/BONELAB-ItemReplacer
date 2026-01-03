@@ -53,13 +53,18 @@ namespace ItemReplacer.Patches
 
                 if (!Fusion.IsConnected)
                 {
-                    SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation);
+                    var source = new UniTaskCompletionSource<Poolee>();
+                    __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
+                    SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
                 }
-                else
+                else if (PreferencesManager.FusionSupport?.Value == true)
                 {
                     bool _continue = Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
-                    __result = res;
+                    if (res != null)
+                        __result = res;
+
                     return _continue;
+
                 }
                 return false;
 
@@ -87,7 +92,7 @@ namespace ItemReplacer.Patches
             return null;
         }
 
-        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation)
+        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
         {
             var scale = new Il2CppSystem.Nullable<Vector3>(Vector3.zero)
             {
@@ -103,7 +108,16 @@ namespace ItemReplacer.Patches
                 policyData = null
             };
             AssetSpawner.Register(spawnable);
-            AssetSpawner.Spawn(spawnable, position, rotation, scale, null, false, groupId, null, null);
+            var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
+            var awaiter = task.GetAwaiter();
+            awaiter.OnCompleted(() =>
+            {
+                var poolee = awaiter.GetResult();
+                if (poolee == null)
+                    return;
+
+                source.TrySetResult(poolee);
+            });
         }
 
         public static string RemoveUnityRichText(this string text)
