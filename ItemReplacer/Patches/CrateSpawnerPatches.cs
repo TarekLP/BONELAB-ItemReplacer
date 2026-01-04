@@ -59,10 +59,10 @@ namespace ItemReplacer.Patches
                 }
                 else if (PreferencesManager.FusionSupport?.Value == true)
                 {
-                    bool _continue = Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
+                    Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
                     __result = res ?? new UniTask<Poolee>(null);
 
-                    return _continue;
+                    return false;
 
                 }
                 return false;
