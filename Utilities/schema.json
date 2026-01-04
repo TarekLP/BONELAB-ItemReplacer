@@ -5,40 +5,51 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The name of the replacer, this will appear in the BoneMenu"
     },
     "color": {
-      "type": "string"
+      "type": "string",
+      "description": "The color of the button in BoneMenu that allows for managing the replacer"
     },
     "id": {
-      "type": "string"
+      "type": "string",
+      "description": "The ID of the replacer, this must be a unique one, two configs with the same ID cannot be registered at the same time"
     },
     "enabled": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether or not the replacer is active, if true it will replace items with the replacements from the categories"
     },
     "categories": {
       "type": "array",
+      "description": "The categories that hold the actual replacements"
       "items": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the category which will be shown in the BoneMenu"
           },
           "enabled": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "If true, the mod will check for the replacement and replace if found, otherwise the category will be ignored"
           },
           "entries": {
             "type": "array",
+            "description": "The list of replacements"
             "items": {
               "type": "object",
               "properties": {
                 "original": {
+                  "description": "The original barcode, here you can also use RegEx, but you have to set the 'isRegEx' property to true"
                   "type": ["string", "regular expressions"]
                 },
                 "replaceWith": {
+                  "description": "The replacement for the original spawnable"
                   "type": "string"
                 },
                 "isRegEx": {
+                  "description": "If true, the 'original' property will be treated like RegEx, otherwise it will check if the original is simply equal to the item being spawned"
                   "type": "boolean"
                 }
               },
