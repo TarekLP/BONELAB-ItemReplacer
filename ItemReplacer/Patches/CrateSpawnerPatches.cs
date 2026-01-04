@@ -25,7 +25,6 @@ namespace ItemReplacer.Patches
         [HarmonyPrefix]
         [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
-        [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnable))]
         public static bool Prefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
             // Is the mod enabled or disabled?
@@ -35,7 +34,7 @@ namespace ItemReplacer.Patches
             if (__instance?.spawnableCrateReference?.Barcode == null) return true;
 
             string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
-            string currentTitle = __instance.spawnableCrateReference.Crate.Title;
+            string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
             string targetBarcode = GetReplacement(currentBarcode);
 
             // While the barcode isnt null, there is a replacement.
@@ -56,12 +55,12 @@ namespace ItemReplacer.Patches
                     var source = new UniTaskCompletionSource<Poolee>();
                     __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
                     SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+                    return false;
                 }
                 else if (PreferencesManager.FusionSupport?.Value == true)
                 {
                     bool _continue = Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
-                    if (res != null)
-                        __result = res;
+                    __result = res ?? new UniTask<Poolee>(null);
 
                     return _continue;
 
@@ -112,11 +111,22 @@ namespace ItemReplacer.Patches
             var awaiter = task.GetAwaiter();
             awaiter.OnCompleted(() =>
             {
-                var poolee = awaiter.GetResult();
-                if (poolee == null)
-                    return;
+                try
+                {
+                    var poolee = awaiter.GetResult();
+                    if (poolee == null)
+                    {
+                        source.TrySetResult(null);
+                        return;
+                    }
 
-                source.TrySetResult(poolee);
+                    source.TrySetResult(poolee);
+                }
+                catch (System.Exception e)
+                {
+                    Core.Logger.Error($"Error spawning replaced item", e);
+                    source.TrySetResult(null);
+                }
             });
         }
 
