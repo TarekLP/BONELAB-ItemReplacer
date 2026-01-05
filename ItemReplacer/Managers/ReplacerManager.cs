@@ -241,7 +241,6 @@ namespace ItemReplacer.Managers
             return null;
         }
 
-        // TODO: Improve file handling, as sometimes it doesn't register the changes correctly
         internal static void CreateFileWatcher()
         {
             LastWrite.Clear();
@@ -252,62 +251,68 @@ namespace ItemReplacer.Managers
                 Filter = "*.json"
             };
             FileSystemWatcher.Error += (x, y) => Core.Logger.Error("An unexpected error was thrown by the file watcher for the configs", y.GetException());
-            FileSystemWatcher.Deleted += (x, y) =>
-            {
-                if (IsIgnored(y.FullPath)) return;
-                LastWrite.Remove(y.FullPath);
-                Core.Logger.Msg($"{y.Name} has been deleted, unregistering replacer");
-                Configs.Where(x => x.FilePath == y.FullPath).ForEach(x => Unregister(x.ID, false));
-            };
-            FileSystemWatcher.Created += (x, y) =>
-            {
-                if (IsIgnored(y.FullPath)) return;
-                if (Check(y.FullPath))
-                {
-                    Core.Logger.Msg($"{y.Name} has been created, registering replacer");
-                    Register(y.FullPath);
-                }
-            };
-            FileSystemWatcher.Changed += (x, y) =>
-            {
-                if (PreventDoubleTrigger(y.FullPath)) return;
-                if (Check(y.FullPath))
-                {
-                    Core.Logger.Msg($"{y.Name} has been modified, updating");
-                    if (!Update(y.FullPath, x => x.Update(y.FullPath), true))
-                    {
-                        Core.Logger.Msg($"{y.Name} has been modified, but wasn't registered. Registering replacer");
-                        Register(y.FullPath);
-                    }
-                    var configs = Configs.Where(x => x.AutoUpdate(y.FullPath));
-                    configs.ForEach(x => x.Update(y.FullPath));
-                }
-                else
-                {
-                    Core.Logger.Error($"{y.Name} was updated, but is not suitable to be a replacer");
-                    Update(y.FullPath, x => Unregister(x.ID), true);
-                }
-                MenuManager.SetupReplacers();
+            FileSystemWatcher.Deleted += Event_DeletedFile;
+            FileSystemWatcher.Created += Event_CreatedFile;
+            FileSystemWatcher.Changed += Event_ModifiedFile;
+            FileSystemWatcher.Renamed += Event_RenamedFile;
+        }
 
-            };
-            FileSystemWatcher.Renamed += (x, y) =>
+        private static void Event_DeletedFile(object sender, FileSystemEventArgs args)
+        {
+            if (IsIgnored(args.FullPath)) return;
+            LastWrite.Remove(args.FullPath);
+            Core.Logger.Msg($"{args.Name} has been deleted, unregistering replacer");
+            Configs.Where(x => x.FilePath == args.FullPath).ForEach(x => Unregister(x.ID, false));
+        }
+
+        private static void Event_CreatedFile(object sender, FileSystemEventArgs args)
+        {
+            if (IsIgnored(args.FullPath)) return;
+            if (Check(args.FullPath))
             {
-                if (IsIgnored(y.FullPath)) return;
-                if (LastWrite.ContainsKey(y.OldFullPath))
-                {
-                    var old = LastWrite[y.OldFullPath];
-                    LastWrite.Remove(y.OldFullPath);
-                    LastWrite.Add(y.FullPath, old);
-                }
-                Core.Logger.Msg($"{y.OldName} has been renamed to {y.Name}, updating information");
-                if (!Update(y.OldFullPath, x => x.FilePath = y.FullPath) && Check(y.FullPath))
-                {
-                    Core.Logger.Msg($"{y.Name} has been renamed to {y.Name}, but wasn't registered. Registering replacer");
-                    Register(y.FullPath);
+                Core.Logger.Msg($"{args.Name} has been created, registering replacer");
+                Register(args.FullPath);
+            }
+        }
 
+        private static void Event_ModifiedFile(object sender, FileSystemEventArgs args)
+        {
+            if (PreventDoubleTrigger(args.FullPath)) return;
+            if (Check(args.FullPath))
+            {
+                Core.Logger.Msg($"{args.Name} has been modified, updating");
+                if (!Update(args.FullPath, x => x.Update(args.FullPath), true))
+                {
+                    Core.Logger.Msg($"{args.Name} has been modified, but wasn't registered. Registering replacer");
+                    Register(args.FullPath);
                 }
+                var configs = Configs.Where(x => x.AutoUpdate(args.FullPath));
+                configs.ForEach(x => x.Update(args.FullPath));
+            }
+            else
+            {
+                Core.Logger.Error($"{args.Name} was updated, but is not suitable to be a replacer");
+                Update(args.FullPath, x => Unregister(x.ID), true);
+            }
+            MenuManager.SetupReplacers();
+        }
 
-            };
+        private static void Event_RenamedFile(object sender, RenamedEventArgs args)
+        {
+            if (IsIgnored(args.FullPath)) return;
+            if (LastWrite.ContainsKey(args.OldFullPath))
+            {
+                var old = LastWrite[args.OldFullPath];
+                LastWrite.Remove(args.OldFullPath);
+                LastWrite.Add(args.FullPath, old);
+            }
+            Core.Logger.Msg($"{args.OldName} has been renamed to {args.Name}, updating information");
+            if (!Update(args.OldFullPath, x => x.FilePath = args.FullPath) && Check(args.FullPath))
+            {
+                Core.Logger.Msg($"{args.Name} has been renamed to {args.Name}, but wasn't registered. Registering replacer");
+                Register(args.FullPath);
+
+            }
         }
 
         internal static bool Update(string filePath, Action<ReplacerConfig> action, bool requireFileWatcherOption = false)
@@ -410,7 +415,7 @@ namespace ItemReplacer.Managers
             if (!string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath))
             {
                 ReplacerManager.IgnoredFilePaths.Add(FilePath);
-                if (printMessage) Core.Logger.Msg($"Saving '{ID}' to file...");
+                LoggerMsg($"Saving '{ID}' to file...", printMessage);
                 try
                 {
                     var serialized = JsonConvert.SerializeObject(this, Formatting.Indented);
@@ -422,24 +427,40 @@ namespace ItemReplacer.Managers
                     {
                         if (task.IsCompletedSuccessfully)
                         {
-                            if (printMessage) Core.Logger.Msg($"Saved '{ID}' to file successfully!");
+                            LoggerMsg($"Saved '{ID}' to file successfully!", printMessage);
                         }
-                        else if (printMessage)
+                        else
                         {
-                            Core.Logger.Error($"Failed to save '{ID}' to file", task.Exception);
+                            LoggerError($"Failed to save '{ID}' to file", task.Exception, printMessage);
                         }
                     });
                 }
                 catch (Exception ex)
                 {
-                    if (printMessage) Core.Logger.Error($"Failed to save '{ID}' to file", ex);
+                    LoggerError($"Failed to save '{ID}' to file", ex, printMessage);
                     throw;
                 }
             }
             else
             {
-                if (printMessage) Core.Logger.Error($"Replacer '{ID}' does not have a file set or it doesn't exist!");
+                LoggerError($"Replacer '{ID}' does not have a file set or it doesn't exist!", print: printMessage);
                 throw new FileNotFoundException("Replacer does not have a file!");
+            }
+        }
+
+        private static void LoggerMsg(string message, bool print = false)
+        {
+            if (print) Core.Logger.Msg(message);
+        }
+
+        private static void LoggerError(string message, Exception ex = null, bool print = false)
+        {
+            if (print)
+            {
+                if (ex != null)
+                    Core.Logger.Error(message, ex);
+                else
+                    Core.Logger.Error(message);
             }
         }
 

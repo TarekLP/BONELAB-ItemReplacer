@@ -124,7 +124,7 @@ namespace ItemReplacer.Patches
                 }
                 catch (System.Exception e)
                 {
-                    Core.Logger.Error($"Error spawning replaced item", e);
+                    Core.Logger.Error("Error spawning replaced item", e);
                     source.TrySetResult(null);
                 }
             });
