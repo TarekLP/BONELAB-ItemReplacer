@@ -25,7 +25,7 @@ namespace ItemReplacer.Managers
 
         public static void Setup()
         {
-            AuthorPage ??= Page.Root.CreatePage("T&H Modding Inc.", Color.white);
+            AuthorPage ??= Page.Root.CreatePage(ModInfo.Company, Color.white);
             ModPage ??= AuthorPage.CreatePage("Item Replacer", new Color(0.6f, 0.0f, 0.8f));
             ModPage.CreateBool("Enable Mod", new Color(0, 1, 0), PreferencesManager.Enabled.Value, (v) =>
             {

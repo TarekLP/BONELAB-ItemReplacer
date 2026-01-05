@@ -21,7 +21,7 @@ namespace ItemReplacer.Patches
     internal static class CrateSpawnerPatches
     {
 
-        // Gun replacing Logic
+        // Item Replacement Logic
         [HarmonyPrefix]
         [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
@@ -106,7 +106,10 @@ namespace ItemReplacer.Patches
                 crateRef = new SpawnableCrateReference(barcode),
                 policyData = null
             };
+
+            // Note to future self: you have to register it, it doesnt work otherwise.
             AssetSpawner.Register(spawnable);
+
             var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
             var awaiter = task.GetAwaiter();
             awaiter.OnCompleted(() =>
