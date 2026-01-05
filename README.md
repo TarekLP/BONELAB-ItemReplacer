@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="Utilities/img/ItemReplacerLogo.png" alt="Item Replacer Logo" width="50%">
+  <img src="Utilities/img/ItemReplacerLogo.png" alt="Item Replacer Logo" width="10%">
   <h1>BONELAB - Item Replacer</h1>
 </div>
 
