@@ -83,7 +83,7 @@ namespace ItemReplacer.Managers
             {
                 Core.Logger.Msg("Saving to file");
                 string path = Path.Combine(ConfigsDir, $"{config.ID}.json");
-                IgnoredFilePaths.Add(path);
+                IgnoredFilePaths.TryAdd(path);
                 var file = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                 config.FilePath = path;
                 var serialized = JsonConvert.SerializeObject(config, Formatting.Indented);
@@ -262,7 +262,10 @@ namespace ItemReplacer.Managers
             if (IsIgnored(args.FullPath)) return;
             LastWrite.Remove(args.FullPath);
             Core.Logger.Msg($"{args.Name} has been deleted, unregistering replacer");
-            Configs.Where(x => x.FilePath == args.FullPath).ForEach(x => Unregister(x.ID, false));
+            var config = Configs.FirstOrDefault(x => x.FilePath == args.FullPath);
+            if (config != null)
+                Unregister(config.ID, false);
+            MenuManager.SetupReplacers();
         }
 
         private static void Event_CreatedFile(object sender, FileSystemEventArgs args)
@@ -273,18 +276,25 @@ namespace ItemReplacer.Managers
                 Core.Logger.Msg($"{args.Name} has been created, registering replacer");
                 Register(args.FullPath);
             }
+            MenuManager.SetupReplacers();
         }
 
         private static void Event_ModifiedFile(object sender, FileSystemEventArgs args)
         {
+            if (!File.Exists(args.FullPath))
+                return;
+
             if (PreventDoubleTrigger(args.FullPath)) return;
             if (Check(args.FullPath))
             {
-                Core.Logger.Msg($"{args.Name} has been modified, updating");
                 if (!Update(args.FullPath, x => x.Update(args.FullPath), true))
                 {
                     Core.Logger.Msg($"{args.Name} has been modified, but wasn't registered. Registering replacer");
                     Register(args.FullPath);
+                }
+                else
+                {
+                    Core.Logger.Msg($"{args.Name} has been modified, updating");
                 }
                 var configs = Configs.Where(x => x.AutoUpdate(args.FullPath));
                 configs.ForEach(x => x.Update(args.FullPath));
@@ -292,7 +302,10 @@ namespace ItemReplacer.Managers
             else
             {
                 Core.Logger.Error($"{args.Name} was updated, but is not suitable to be a replacer");
-                Update(args.FullPath, x => Unregister(x.ID), true);
+                var config = Configs.FirstOrDefault(x => x.FilePath == args.FullPath);
+                if (config != null)
+                    UnregisterFile(config.FilePath);
+
             }
             MenuManager.SetupReplacers();
         }
@@ -313,12 +326,17 @@ namespace ItemReplacer.Managers
                 Register(args.FullPath);
 
             }
+            else
+            {
+                Core.Logger.Msg($"{args.OldName} has been renamed to {args.Name}, updating information");
+            }
+            MenuManager.SetupReplacers();
         }
 
         internal static bool Update(string filePath, Action<ReplacerConfig> action, bool requireFileWatcherOption = false)
         {
             var configs = Configs.Where(x => x.FilePath == filePath);
-            if (requireFileWatcherOption && configs.ToList().TrueForAll(x => !x.IsFileWatcherEnabled))
+            if (configs.Any() && requireFileWatcherOption && configs.ToList().TrueForAll(x => !x.IsFileWatcherEnabled))
                 return true;
 
             if (configs.Any())
@@ -363,6 +381,28 @@ namespace ItemReplacer.Managers
             {
                 Core.Logger.Error($"A config with ID '{ID}' does not exist!");
                 throw new KeyNotFoundException($"Config with ID '{ID}' could not be found!");
+            }
+        }
+
+        public static void UnregisterFile(string file, bool removeFile = true)
+        {
+            Core.Logger.Msg($"Unregistering config at path '{file}'");
+            var config = _configs.FirstOrDefault(x => x.FilePath == file);
+            if (config != null)
+            {
+                _configs.Remove(config);
+                if (removeFile && !string.IsNullOrWhiteSpace(config.FilePath))
+                {
+                    Core.Logger.Msg($"Removing file at '{config.FilePath}'");
+                    if (File.Exists(config.FilePath))
+                        File.Delete(config.FilePath);
+                }
+                Core.Logger.Msg($"Unregistered config at path '{file}'");
+            }
+            else
+            {
+                Core.Logger.Error($"A config at path '{file}' does not exist!");
+                throw new KeyNotFoundException($"Config at path '{file}' could not be found!");
             }
         }
     }
@@ -414,7 +454,7 @@ namespace ItemReplacer.Managers
         {
             if (!string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath))
             {
-                ReplacerManager.IgnoredFilePaths.Add(FilePath);
+                ReplacerManager.IgnoredFilePaths.TryAdd(FilePath);
                 LoggerMsg($"Saving '{ID}' to file...", printMessage);
                 try
                 {
@@ -505,7 +545,6 @@ namespace ItemReplacer.Managers
 
         internal void Update(string path)
         {
-            ReplacerManager.IgnoredFilePaths.Add(FilePath);
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
             if (!File.Exists(path)) throw new FileNotFoundException($"Save file at '{path}' could be found");
             var text = ReplacerManager.ReadAllTextUsedFile(path);

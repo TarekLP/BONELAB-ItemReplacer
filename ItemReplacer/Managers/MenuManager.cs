@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
 
 using BoneLib.BoneMenu;
+using BoneLib.BoneMenu.UI;
 
 using Il2CppSLZ.Marrow.Warehouse;
 
@@ -10,6 +13,8 @@ using ItemReplacer.Helpers;
 using ItemReplacer.Patches;
 
 using UnityEngine;
+
+using static MelonLoader.MelonLogger;
 
 namespace ItemReplacer.Managers
 {
@@ -70,7 +75,7 @@ namespace ItemReplacer.Managers
 
         internal static void SetupReplacers()
         {
-            if (AuthorPage == null || ModPage == null || ReplacersPage == null)
+            if (ReplacersPage == null)
                 return;
 
             ReplacersPage.RemoveAll();
@@ -87,22 +92,14 @@ namespace ItemReplacer.Managers
                     Core.Logger.Error("ID is null or empty, cannot generate element");
                 }
 
-                Page page = null;
-                if (!ReplacerPages.ContainsKey(config.ID))
-                {
-                    if (!config.Color.TryFromHEX(out Color color))
-                        Core.Logger.Error($"Color for '{config.ID}' is invalid");
-                    page = ReplacersPage.CreatePage(config.Name, color, createLink: false);
-                    ReplacerPages[config.ID] = page;
-                }
-                else
-                {
-                    page = ReplacerPages[config.ID];
-                }
+                Page page = PageFromConfig(config);
 
                 ReplacersPage.CreatePageLink(page);
 
                 page.RemoveAll();
+
+                if (!string.IsNullOrWhiteSpace(config.FilePath) && File.Exists(config.FilePath))
+                    page.CreateFunction($"File: {Path.GetFileName(config.FilePath)}", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
                 page.CreateBool("Enabled", Color.green, config.Enabled, (v) =>
                 {
@@ -123,10 +120,53 @@ namespace ItemReplacer.Managers
                         config.SaveToFile(false);
                     });
                 });
+
+                if (Menu.CurrentPage == page)
+                    CorrectPage(page);
             }
 
             if (Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
                 Menu.OpenParentPage();
+        }
+
+        private static Page PageFromConfig(ReplacerConfig config)
+        {
+            Page page;
+            if (!ReplacerPages.ContainsKey(config.ID))
+            {
+                page = ReplacersPage.CreatePage(config.Name, config.GetColor(), createLink: false);
+                ReplacerPages[config.ID] = page;
+            }
+            else
+            {
+                page = ReplacerPages[config.ID];
+                page.Name = config.Name;
+                page.Color = config.GetColor();
+            }
+            return page;
+        }
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable S3011 // Make sure that this accessibility bypass is safe here
+        private static void CorrectPage(Page page)
+        {
+            GUIMenu.Instance.GetType().GetMethod("DrawHeader",
+                            bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(GUIMenu.Instance, [page]);
+        }
+#pragma warning restore S3011, IDE0079 // Remove unnecessary suppression
+
+        private static Color GetColor(this ReplacerConfig config)
+        {
+            if (config.Color.TryFromHEX(out Color color))
+            {
+                return color;
+            }
+            else
+            {
+                Core.Logger.Error($"Color for '{config.ID}' is invalid");
+                return Color.white;
+            }
         }
 
         private static Color StateColor(bool state)

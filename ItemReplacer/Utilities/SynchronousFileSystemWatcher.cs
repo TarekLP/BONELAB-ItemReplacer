@@ -1,52 +1,21 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 using MelonLoader;
 
 namespace ItemReplacer.Utilities
 {
-    public sealed class SynchronousFileSystemWatcher : IDisposable
+    public sealed class SynchronousFileSystemWatcher : FileSystemWatcher, IDisposable
     {
-        private readonly FileSystemWatcher _watcher = new();
 
-        public bool EnableRaisingEvents
-        {
-            get => _watcher.EnableRaisingEvents;
-            set => _watcher.EnableRaisingEvents = value;
-        }
+        public new event EventHandler<RenamedEventArgs> Renamed;
 
-        public NotifyFilters NotifyFilter
-        {
-            get => _watcher.NotifyFilter;
-            set => _watcher.NotifyFilter = value;
-        }
+        public new event EventHandler<FileSystemEventArgs> Created, Deleted, Changed;
 
-        public string Filter
-        {
-            get => _watcher.Filter;
-            set => _watcher.Filter = value;
-        }
+        public new event EventHandler Disposed;
 
-        public Collection<string> Filters
-        {
-            get => _watcher.Filters;
-        }
-
-        public string Path
-        {
-            get => _watcher.Path;
-            set => _watcher.Path = value;
-        }
-
-        public event EventHandler<RenamedEventArgs> Renamed;
-
-        public event EventHandler<FileSystemEventArgs> Created, Deleted, Changed;
-
-        public event EventHandler Disposed;
-
-        public event EventHandler<ErrorEventArgs> Error;
+        public new event EventHandler<ErrorEventArgs> Error;
 
         private readonly List<EventArgs> _Queue = [];
         public IReadOnlyList<EventArgs> Queue => _Queue.AsReadOnly();
@@ -56,26 +25,26 @@ namespace ItemReplacer.Utilities
 
         public SynchronousFileSystemWatcher(string path)
         {
-            _watcher.Path = path;
+            base.Path = path;
             Init();
         }
 
         public SynchronousFileSystemWatcher(string path, string filter)
         {
-            _watcher.Path = path;
-            _watcher.Filter = filter;
+            base.Path = path;
+            base.Filter = filter;
             Init();
         }
 
         private void Init()
         {
-            _watcher.Renamed += (sender, e) => _Queue.Add(e);
-            _watcher.Created += (sender, e) => _Queue.Add(e);
-            _watcher.Deleted += (sender, e) => _Queue.Add(e);
-            _watcher.Changed += (sender, e) => _Queue.Add(e);
-            _watcher.Disposed += (sender, e) => _Queue.Add(e);
+            base.Renamed += (sender, e) => _Queue.Add(e);
+            base.Created += (sender, e) => _Queue.Add(e);
+            base.Deleted += (sender, e) => _Queue.Add(e);
+            base.Changed += (sender, e) => _Queue.Add(e);
+            base.Disposed += (sender, e) => _Queue.Add(e);
 
-            _watcher.Error += (sender, e) => _Queue.Add(e);
+            base.Error += (sender, e) => _Queue.Add(e);
             MelonEvents.OnUpdate.Subscribe(Update);
         }
 
@@ -99,7 +68,7 @@ namespace ItemReplacer.Utilities
                     }
                     catch (Exception ex)
                     {
-                        MelonLogger.Error("SynchronousFileSystemWatcher | An unexpected error has occurred while triggering file system watcher events", ex);
+                        ErrorMsg("An unexpected error has occurred while triggering file system watcher events", ex);
                     }
                     finally
                     {
@@ -127,7 +96,7 @@ namespace ItemReplacer.Utilities
             }
             catch (Exception ex)
             {
-                MelonLogger.Error("SynchronousFileSystemWatcher | An unexpected error has occurred while running Disposed event", ex);
+                ErrorMsg("An unexpected error has occurred while running Disposed event", ex);
             }
             finally
             {
@@ -135,15 +104,18 @@ namespace ItemReplacer.Utilities
             }
         }
 
-        public void Dispose()
+        private static void ErrorMsg(string message, Exception ex)
+            => MelonLogger.Error($"[FileSystemWatcher] {message}", ex);
+
+        public new void Dispose()
         {
             try
             {
-                _watcher.Dispose();
+                base.Dispose();
             }
             catch (Exception ex)
             {
-                MelonLogger.Error("SynchronousFileSystemWatcher | An exception occurred while disposing of FileSystemWatcher", ex);
+                ErrorMsg("An exception occurred while disposing of FileSystemWatcher", ex);
             }
             MelonEvents.OnUpdate.Unsubscribe(Update);
             Disposed?.Invoke(this, EventArgs.Empty);

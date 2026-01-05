@@ -22,5 +22,11 @@ namespace ItemReplacer.Helpers
             foreach (var item in hashSet)
                 action?.Invoke(item);
         }
+
+        public static void TryAdd<T>(this List<T> list, T item)
+        {
+            if (!list.Contains(item))
+                list.Add(item);
+        }
     }
 }
