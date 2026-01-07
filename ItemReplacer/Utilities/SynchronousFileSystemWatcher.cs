@@ -23,18 +23,12 @@ namespace ItemReplacer.Utilities
         public SynchronousFileSystemWatcher()
             => Init();
 
-        public SynchronousFileSystemWatcher(string path)
-        {
-            base.Path = path;
-            Init();
-        }
+        public SynchronousFileSystemWatcher(string path) : base(path)
+            => Init();
 
-        public SynchronousFileSystemWatcher(string path, string filter)
-        {
-            base.Path = path;
-            base.Filter = filter;
-            Init();
-        }
+        public SynchronousFileSystemWatcher(string path, string filter) : base(path, filter)
+            => Init();
+
 
         private void Init()
         {

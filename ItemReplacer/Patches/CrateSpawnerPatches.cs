@@ -27,48 +27,57 @@ namespace ItemReplacer.Patches
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
         public static bool Prefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
-            // Is the mod enabled or disabled?
-            if (PreferencesManager.Enabled?.Value != true) return true;
-
-            // if there is no barcode, there is no replacement.
-            if (__instance?.spawnableCrateReference?.Barcode == null) return true;
-
-            string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
-            string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
-            string targetBarcode = GetReplacement(currentBarcode);
-
-            // While the barcode isnt null, there is a replacement.
-            if (targetBarcode != null)
+            try
             {
-                var crateRef = new SpawnableCrateReference(targetBarcode);
-                if (crateRef?.TryGetCrate(out var crate) != true)
-                {
-                    Core.Logger.Error($"Barcode does not exist in-game, the mod may not be installed. Not replacing item. (Barcode: {targetBarcode})");
-                    return true;
-                }
+                // Is the mod enabled or disabled?
+                if (PreferencesManager.Enabled?.Value != true) return true;
 
-                if (PreferencesManager.IsDebug())
-                    Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
+                // if there is no barcode, there is no replacement.
+                if (__instance?.spawnableCrateReference?.Barcode == null) return true;
 
-                if (!Fusion.IsConnected)
+                string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
+                string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
+                string targetBarcode = GetReplacement(currentBarcode);
+
+                // While the barcode isnt null, there is a replacement.
+                if (targetBarcode != null)
                 {
-                    var source = new UniTaskCompletionSource<Poolee>();
-                    __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
-                    SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+                    var crateRef = new SpawnableCrateReference(targetBarcode);
+                    if (crateRef?.TryGetCrate(out var crate) != true)
+                    {
+                        Core.Logger.Error($"Barcode does not exist in-game, the mod may not be installed. Not replacing item. (Barcode: {targetBarcode})");
+                        return true;
+                    }
+
+                    if (PreferencesManager.IsDebug())
+                        Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
+
+                    if (!Fusion.IsConnected)
+                    {
+                        var source = new UniTaskCompletionSource<Poolee>();
+                        __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
+                        SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+                        return false;
+                    }
+                    else if (PreferencesManager.FusionSupport?.Value == true)
+                    {
+                        Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
+                        __result = res ?? new UniTask<Poolee>(null);
+
+                        return false;
+
+                    }
                     return false;
-                }
-                else if (PreferencesManager.FusionSupport?.Value == true)
-                {
-                    Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
-                    __result = res ?? new UniTask<Poolee>(null);
-
-                    return false;
 
                 }
-                return false;
+                return true;
 
             }
-            return true;
+            catch (System.Exception e)
+            {
+                Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
+                return true;
+            }
         }
 
         private static string GetReplacement(string barcode)
@@ -112,7 +121,7 @@ namespace ItemReplacer.Patches
 
             var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
             var awaiter = task.GetAwaiter();
-            awaiter.OnCompleted(() =>
+            awaiter.OnCompleted(async () =>
             {
                 try
                 {

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 
 using BoneLib.BoneMenu;
 using BoneLib.BoneMenu.UI;
@@ -13,8 +12,6 @@ using ItemReplacer.Helpers;
 using ItemReplacer.Patches;
 
 using UnityEngine;
-
-using static MelonLoader.MelonLogger;
 
 namespace ItemReplacer.Managers
 {

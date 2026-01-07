@@ -125,7 +125,7 @@ namespace ItemReplacer.Utilities
             }
             catch (Exception e)
             {
-                Core.Logger.Error($"networking CrateSpawner {spawner.name}", e);
+                Core.Logger.Error("An unexpected error has occurred while spawning replacement in Fusion", e);
             }
 
             return false;
