@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using BoneLib;
 using BoneLib.BoneMenu;
 using BoneLib.BoneMenu.UI;
 
@@ -10,6 +12,8 @@ using Il2CppSLZ.Marrow.Warehouse;
 
 using ItemReplacer.Helpers;
 using ItemReplacer.Patches;
+
+using MelonLoader;
 
 using UnityEngine;
 
@@ -23,51 +27,25 @@ namespace ItemReplacer.Managers
 
         public static Page ReplacersPage { get; private set; }
 
+        public static Page DebugPage { get; private set; }
+
+        internal static FunctionElement TotalReplacedElement { get; set; }
+        internal static FunctionElement LevelReplacedElement { get; set; }
+
         private static Dictionary<string, Page> ReplacerPages { get; } = [];
 
         public static void Setup()
         {
-            AuthorPage ??= Page.Root.CreatePage(ModInfo.Company, Color.white);
-            ModPage ??= AuthorPage.CreatePage("Item Replacer", new Color(0.6f, 0.0f, 0.8f));
-            ModPage.CreateBool("Enable Mod", new Color(0, 1, 0), PreferencesManager.Enabled.Value, (v) =>
-            {
-                PreferencesManager.Enabled.Value = v;
-                PreferencesManager.Category.SaveToFile(false);
-            });
-
-            ModPage.CreateBool("Debug Logging", Color.cyan, PreferencesManager.DebugMode.Value, (v) =>
-            {
-                PreferencesManager.DebugMode.Value = v;
-                PreferencesManager.Category.SaveToFile(false);
-            });
-            ModPage.CreateBool("LabFusion Support", Color.cyan, PreferencesManager.FusionSupport.Value, (v) =>
-            {
-                PreferencesManager.FusionSupport.Value = v;
-                PreferencesManager.Category.SaveToFile(false);
-            }).SetTooltip(PreferencesManager.FusionSupport.Description);
-            ModPage.CreateFunction("Dump all barcodes to TXT file", Color.red, () =>
-            {
-                Core.Logger.Msg("Dumping all barcodes...");
-                List<string> barcodes = [];
-                AssetWarehouse.Instance.gamePallets.ForEach(x =>
-                {
-                    if (AssetWarehouse.Instance.TryGetPallet(x, out Pallet pallet))
-                    {
-                        pallet.Crates.ForEach((System.Action<Crate>)(crate =>
-                        {
-                            if (crate.Barcode != null)
-                                barcodes.Add($"{crate.Title.RemoveUnityRichText()} - {crate.Barcode.ID}");
-                        }));
-                    }
-                });
-                using var file = File.CreateText(Path.Combine(PreferencesManager.ConfigDir, "dump.txt"));
-                barcodes.ForEach(x => file.WriteLine(x));
-                file.Flush();
-                file.Close();
-                Core.Logger.Msg($"Dumped {barcodes.Count} barcodes to dump.txt");
-            });
+            AuthorPage ??= Page.Root.CreatePage(ModInfo.Author, Color.white);
+            ModPage ??= AuthorPage.CreatePage(ModInfo.Name, new Color(0.6f, 0.0f, 0.8f));
+            ModPage.CreateBoolPref("Enable Mod", new Color(0, 1, 0), ref PreferencesManager.Enabled);
+            ModPage.CreateBoolPref("LabFusion Support", Color.cyan, ref PreferencesManager.FusionSupport);
             ReplacersPage ??= ModPage.CreatePage("Replacers", Color.yellow);
             SetupReplacers();
+            DebugPage ??= ModPage.CreatePage("Debug", Color.cyan);
+            SetupDebug();
+
+            Core.Thunderstore.BL_CreateMenuLabel(ModPage, true);
         }
 
         internal static void SetupReplacers()
@@ -126,6 +104,84 @@ namespace ItemReplacer.Managers
                 Menu.OpenParentPage();
         }
 
+        internal static void SetupDebug()
+        {
+            if (DebugPage == null)
+                return;
+            DebugPage.RemoveAll();
+
+
+            TotalReplacedElement = DebugPage.CreateFunction($"Total Replaced: {CrateSpawnerPatches.TotalReplacements}", Color.white, null);
+            LevelReplacedElement = DebugPage.CreateFunction($"Level Replaced: {CrateSpawnerPatches.LevelReplacements}", Color.white, null);
+            TotalReplacedElement.SetProperty(ElementProperties.NoBorder);
+            LevelReplacedElement.SetProperty(ElementProperties.NoBorder);
+
+            DebugPage.CreateBoolPref("Debug Logging", Color.cyan, ref PreferencesManager.DebugMode);
+            DebugPage.CreateFunction("Dump all barcodes to TXT file", Color.red, DumpBarcodes);
+        }
+
+        internal static void UpdateDebugCounts()
+        {
+            if (TotalReplacedElement == null || LevelReplacedElement == null)
+                return;
+
+            TotalReplacedElement.ElementName = $"Total Replaced: {CrateSpawnerPatches.TotalReplacements}";
+            LevelReplacedElement.ElementName = $"Level Replaced: {CrateSpawnerPatches.LevelReplacements}";
+        }
+
+        private static void DumpBarcodes()
+        {
+            Core.Logger.Msg("Dumping all barcodes...");
+            List<string> spawnables = [];
+            List<string> avatars = [];
+            List<string> levels = [];
+            List<string> unidentified = [];
+            AssetWarehouse.Instance.gamePallets.ForEach(x =>
+            {
+                if (AssetWarehouse.Instance.TryGetPallet(x, out Pallet pallet))
+                {
+                    pallet.Crates.ForEach((System.Action<Crate>)(crate =>
+                    {
+                        if (crate.Barcode != null)
+                        {
+                            if (crate.GetIl2CppType().Name == nameof(SpawnableCrate))
+                                spawnables.Add(FormatBarcode(crate, "Spawnable"));
+                            else if (crate.GetIl2CppType().Name == nameof(AvatarCrate))
+                                avatars.Add(FormatBarcode(crate, "Avatar"));
+                            else if (crate.GetIl2CppType().Name == nameof(LevelCrate))
+                                levels.Add(FormatBarcode(crate, "Level"));
+                            else
+                                unidentified.Add(FormatBarcode(crate, "Unidentified"));
+                        }
+                    }));
+                }
+            });
+            using var file = File.CreateText(Path.Combine(PreferencesManager.ConfigDir, "dump.txt"));
+            file.WriteLine("Title - Barcode - Crate Type");
+            file.WriteLine($"=============================================={file.NewLine}");
+
+            file.WriteList(avatars);
+            file.WriteList(levels);
+            file.WriteList(spawnables);
+            unidentified.ForEach(file.WriteLine);
+
+            file.Flush();
+            file.Close();
+            Core.Logger.Msg($"Dumped {spawnables.Count} spawnables, {avatars.Count} avatars, {levels.Count} levels and {unidentified.Count} unidentified crates to dump.txt");
+        }
+
+        const string dumpFormat = "{0} - {1} - {2}";
+
+        private static void WriteList(this StreamWriter file, List<string> list)
+        {
+            list.ForEach(file.WriteLine);
+            if (list.Count > 0)
+                file.WriteLine($"{file.NewLine}=============================================={file.NewLine}");
+        }
+
+        private static string FormatBarcode(Crate crate, string typeName)
+            => string.Format(dumpFormat, crate.Title?.RemoveUnityRichText() ?? "N/A", crate.Barcode?.ID ?? "N/A", typeName);
+
         private static Page PageFromConfig(ReplacerConfig config)
         {
             Page page;
@@ -164,6 +220,22 @@ namespace ItemReplacer.Managers
                 Core.Logger.Error($"Color for '{config.ID}' is invalid");
                 return Color.white;
             }
+        }
+
+        public static BoolElement CreateBoolPref(this Page page, string name, Color color, ref MelonPreferences_Entry<bool> pref, Action<bool> callback = null)
+        {
+            MelonPreferences_Entry<bool> localPref = pref;
+            var elem = page.CreateBool(name, color, pref.Value, (v) =>
+            {
+                localPref.Value = v;
+                PreferencesManager.Category.SaveToFile(false);
+                callback?.InvokeActionSafe(v);
+            });
+
+            if (!string.IsNullOrWhiteSpace(pref.Description))
+                elem.SetTooltip(pref.Description);
+
+            return elem;
         }
 
         private static Color StateColor(bool state)

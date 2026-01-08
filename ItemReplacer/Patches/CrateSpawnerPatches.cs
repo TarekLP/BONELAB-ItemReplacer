@@ -20,6 +20,8 @@ namespace ItemReplacer.Patches
     [HarmonyPatch(typeof(CrateSpawner))]
     internal static class CrateSpawnerPatches
     {
+        public static int TotalReplacements { get; internal set; } = 0;
+        public static int LevelReplacements { get; internal set; } = 0;
 
         // Item Replacement Logic
         [HarmonyPrefix]
@@ -57,13 +59,14 @@ namespace ItemReplacer.Patches
                         var source = new UniTaskCompletionSource<Poolee>();
                         __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
                         SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+                        ReplacedSuccess();
                         return false;
                     }
                     else if (PreferencesManager.FusionSupport?.Value == true)
                     {
                         Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
                         __result = res ?? new UniTask<Poolee>(null);
-
+                        ReplacedSuccess();
                         return false;
 
                     }
@@ -78,6 +81,13 @@ namespace ItemReplacer.Patches
                 Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
                 return true;
             }
+        }
+
+        private static void ReplacedSuccess()
+        {
+            TotalReplacements++;
+            LevelReplacements++;
+            MenuManager.UpdateDebugCounts();
         }
 
         private static string GetReplacement(string barcode)

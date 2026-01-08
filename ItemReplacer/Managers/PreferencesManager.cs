@@ -5,20 +5,28 @@ using MelonLoader.Utils;
 
 namespace ItemReplacer.Managers
 {
-    public static class PreferencesManager
+    internal static class PreferencesManager
     {
         // Preferences
-        public static MelonPreferences_Category Category { get; private set; }
-        public static MelonPreferences_Entry<bool> Enabled { get; private set; }
-        public static MelonPreferences_Entry<bool> DebugMode { get; private set; }
+        internal static MelonPreferences_Category Category { get; private set; }
 
-        public static MelonPreferences_Entry<bool> FusionSupport { get; private set; }
+        // The fuck you mean unnecessary suppresion
+        // AND THE FUCK YOU MEAN I HAVE TO SILENCE THAT AS WELL.
+        // Fuck Visual Studio, i hate this shit.
+#pragma warning disable RCS1222 // Merge preprocessor directives
+#pragma warning disable IDE0079
+#pragma warning disable S2223
+        internal static MelonPreferences_Entry<bool> Enabled;
+        internal static MelonPreferences_Entry<bool> DebugMode;
 
-        public static string ConfigDir => Path.Combine(MelonEnvironment.UserDataDirectory, ModInfo.Name);
+        internal static MelonPreferences_Entry<bool> FusionSupport;
+#pragma warning restore S2223, IDE0079, RCS1222
 
-        public static string ConfigFile => Path.Combine(ConfigDir, "Config.cfg");
+        internal static string ConfigDir => Path.Combine(MelonEnvironment.UserDataDirectory, ModInfo.Name);
 
-        public static bool IsDebug()
+        internal static string ConfigFile => Path.Combine(ConfigDir, "Config.cfg");
+
+        internal static bool IsDebug()
         {
             if (DebugMode?.Value == true)
                 return true;
@@ -29,21 +37,21 @@ namespace ItemReplacer.Managers
             return false;
         }
 
-        public static void Setup()
+        internal static void Setup()
         {
             EnsureFolder();
 
             Category = MelonPreferences.CreateCategory(ModInfo.Name);
-            Category.SetFilePath(ConfigFile);
 
             Enabled = Category.CreateEntry("Enabled", true);
             DebugMode = Category.CreateEntry("Debug", false, description: "When enabled, provides additional logging for debugging");
             FusionSupport = Category.CreateEntry("FusionSupport", true, description: "When enabled, items will be replaced even when you are in a LabFusion lobby");
 
+            Category.SetFilePath(ConfigFile);
             Category.SaveToFile(false);
         }
 
-        public static void EnsureFolder()
+        internal static void EnsureFolder()
         {
             if (!Directory.Exists(ConfigDir))
             {
