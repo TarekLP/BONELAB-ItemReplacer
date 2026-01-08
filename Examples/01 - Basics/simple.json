@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TarekLP/BONELAB-ItemReplacer/refs/heads/master/Utilities/schema.json",
+  "name": "Simple",
+  "color": "#FFEA00",
+  "id": "simple",
+  "enabled": true,
+  "categories": [
+    {
+      "name": "AKM",
+      "enabled": true,
+      "entries": [
+        {
+          "original": "c1534c5a-a6b5-4177-beb8-04d947756e41",
+          "replaceWith": "Remox.RemoxsWeaponPack.Spawnable.AKM",
+          "isRegEx": false
+        }
+      ]
+    }
+  ]
+}
