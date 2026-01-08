@@ -35,6 +35,8 @@ The first two properties - `name` and `color` are purely you could say decoratio
 
 The `id` is a property that MUST be unique, you cannot register two configs with the same ID.
 
+The `$schema` property allows for a code/text editor (like [Visual Studio Code](https://code.visualstudio.com/)) to know how the config file is supposed to work, providing autocompletion, showing descriptions of properties and other useful things.
+
 The replacer can be disabled or enabled using the `enabled` property.
 
 The way replacements are handled is pretty simple:
