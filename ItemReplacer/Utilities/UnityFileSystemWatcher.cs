@@ -6,7 +6,7 @@ using MelonLoader;
 
 namespace ItemReplacer.Utilities
 {
-    public sealed class SynchronousFileSystemWatcher : FileSystemWatcher, IDisposable
+    public sealed class UnityFileSystemWatcher : FileSystemWatcher, IDisposable
     {
 
         public new event EventHandler<RenamedEventArgs> Renamed;
@@ -20,13 +20,13 @@ namespace ItemReplacer.Utilities
         private readonly List<EventArgs> _Queue = [];
         public IReadOnlyList<EventArgs> Queue => _Queue.AsReadOnly();
 
-        public SynchronousFileSystemWatcher()
+        public UnityFileSystemWatcher()
             => Init();
 
-        public SynchronousFileSystemWatcher(string path) : base(path)
+        public UnityFileSystemWatcher(string path) : base(path)
             => Init();
 
-        public SynchronousFileSystemWatcher(string path, string filter) : base(path, filter)
+        public UnityFileSystemWatcher(string path, string filter) : base(path, filter)
             => Init();
 
 

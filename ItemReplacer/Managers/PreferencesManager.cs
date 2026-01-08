@@ -47,7 +47,7 @@ namespace ItemReplacer.Managers
             DebugMode = Category.CreateEntry("Debug", false, description: "When enabled, provides additional logging for debugging");
             FusionSupport = Category.CreateEntry("FusionSupport", true, description: "When enabled, items will be replaced even when you are in a LabFusion lobby");
 
-            Category.SetFilePath(ConfigFile);
+            Category.SetFilePath(ConfigFile, true, false);
             Category.SaveToFile(false);
         }
 

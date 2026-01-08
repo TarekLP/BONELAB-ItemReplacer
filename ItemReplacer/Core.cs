@@ -32,13 +32,12 @@ namespace ItemReplacer
         {
             Logger = LoggerInstance;
 
+            LoggerInstance.Msg("Setting up preferences");
+            PreferencesManager.Setup();
 
             Thunderstore = new($"{ModInfo.Name} / {ModInfo.Version} A BONELAB Mod");
             Thunderstore.BL_FetchPackage(ModInfo.Name, ModInfo.ThunderstoreAuthor, ModInfo.Version, LoggerInstance);
             Hooking.OnLevelLoaded += OnLevelLoad;
-
-            LoggerInstance.Msg("Setting up preferences");
-            PreferencesManager.Setup();
 
             LoggerInstance.Msg("Setting up replacers");
             ReplacerManager.Setup();

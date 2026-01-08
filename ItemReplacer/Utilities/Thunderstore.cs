@@ -1,19 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
-using BoneLib.BoneMenu;
-using BoneLib.Notifications;
-
-using MelonLoader;
+using System.Collections.Generic;
 
 using Semver;
 
 using UnityEngine;
+
+using MelonLoader;
+
+using Newtonsoft.Json;
+
+using BoneLib.BoneMenu;
+using BoneLib.Notifications;
+
+using ItemReplacer.Managers;
 
 namespace ItemReplacer.Utilities
 {
@@ -176,16 +178,16 @@ namespace ItemReplacer.Utilities
                 content.Wait();
                 var result2 = content?.Result;
                 if (IsTaskGood(content))
-                    return JsonSerializer.Deserialize<T>(result2);
+                    return JsonConvert.DeserializeObject<T>(result2);
             }
             return default;
         }
 
         private static void HandleHttpError(HttpResponseMessage result)
         {
-            if (IsThunderstoreError(result))
+            if (IsThunderstoreError(result, out string details))
             {
-                if (IsPackageNotFound(result))
+                if (IsPackageNotFound(result, details))
                     throw new ThunderstorePackageNotFoundException("Thunderstore could not find the package");
                 else
                     throw new ThunderstoreErrorException("Thunderstore API has thrown an unexpected error!", result);
@@ -234,130 +236,92 @@ namespace ItemReplacer.Utilities
             }
         }
 
-        private static bool IsPackageNotFound(HttpResponseMessage response)
+        private static bool IsPackageNotFound(HttpResponseMessage response, string details = "")
         {
             const string detect = "Not found.";
             if (response.StatusCode != HttpStatusCode.NotFound)
-            {
                 return false;
-            }
-            else
-            {
-                var @string = response.Content.ReadAsStringAsync();
-                @string.Wait();
-                var _string = @string.Result;
-                if (string.IsNullOrWhiteSpace(_string))
-                {
-                    return false;
-                }
-                else
-                {
-                    ThunderstoreErrorResponse error;
-                    try
-                    {
-                        error = JsonSerializer.Deserialize<ThunderstoreErrorResponse>(_string);
-                    }
-                    catch (JsonException)
-                    {
-                        return false;
-                    }
-                    if (error != null)
-                    {
-                        return string.Equals(error.Details, detect, StringComparison.OrdinalIgnoreCase);
-                    }
-                }
-            }
-            return false;
+
+            if (details?.Length == 0)
+                details = GetDetails(response);
+
+            return string.Equals(details, detect, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsThunderstoreError(HttpResponseMessage response)
+        private static bool IsThunderstoreError(HttpResponseMessage response, out string details)
+        {
+            details = GetDetails(response);
+            return !string.IsNullOrWhiteSpace(details);
+        }
+
+
+        private static string GetDetails(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
+                return null;
+            var @string = response.Content.ReadAsStringAsync();
+            @string.Wait();
+            var _string = @string.Result;
+            if (string.IsNullOrWhiteSpace(_string))
+                return null;
+
+            if (PreferencesManager.DebugMode?.Value == true)
+                Core.Logger.Msg($"Thunderstore returned an error response: {_string}");
+
+            ThunderstoreErrorResponse error;
+            try
             {
-                return false;
+                error = JsonConvert.DeserializeObject<ThunderstoreErrorResponse>(_string);
             }
-            else
+            catch (JsonException)
             {
-                var @string = response.Content.ReadAsStringAsync();
-                @string.Wait();
-                var _string = @string.Result;
-                if (string.IsNullOrWhiteSpace(_string))
-                {
-                    return false;
-                }
-                else
-                {
-                    ThunderstoreErrorResponse error;
-                    try
-                    {
-                        error = JsonSerializer.Deserialize<ThunderstoreErrorResponse>(_string);
-                    }
-                    catch (JsonException)
-                    {
-                        return false;
-                    }
-                    if (error != null)
-                    {
-                        return !string.IsNullOrWhiteSpace(error.Details);
-                    }
-                }
+                return null;
             }
-            return false;
+            if (!string.IsNullOrWhiteSpace(error?.Details))
+                return error.Details;
+            return null;
         }
     }
 
     public class Package
     {
-        [JsonPropertyName("namespace")]
-        [JsonInclude]
+        [JsonProperty("namespace")]
         public string Namespace { get; internal set; }
 
-        [JsonPropertyName("name")]
-        [JsonInclude]
+        [JsonProperty("name")]
         public string Name { get; internal set; }
 
-        [JsonPropertyName("full_name")]
-        [JsonInclude]
+        [JsonProperty("full_name")]
         public string FullName { get; internal set; }
 
-        [JsonPropertyName("owner")]
-        [JsonInclude]
+        [JsonProperty("owner")]
         public string Owner { get; internal set; }
 
-        [JsonPropertyName("package_url")]
-        [JsonInclude]
-        public string PackageUrl { get; internal set; }
+        [JsonProperty("package_url")]
+        public string PackageURL { get; internal set; }
 
-        [JsonPropertyName("date_created")]
-        [JsonInclude]
+        [JsonProperty("date_created")]
         public DateTime CreatedAt { get; internal set; }
 
-        [JsonPropertyName("date_updated")]
-        [JsonInclude]
+        [JsonProperty("date_updated")]
         public DateTime UpdatedAt { get; internal set; }
 
-        [JsonPropertyName("rating_score")]
-        [JsonInclude]
+        [JsonProperty("rating_score")]
         public int RatingScore { get; internal set; }
 
-        [JsonPropertyName("is_pinned")]
-        [JsonInclude]
+        [JsonProperty("is_pinned")]
         public bool IsPinned { get; internal set; }
 
-        [JsonPropertyName("is_deprecated")]
-        [JsonInclude]
+        [JsonProperty("is_deprecated")]
         public bool IsDeprecated { get; internal set; }
 
-        [JsonPropertyName("total_downloads")]
-        [JsonInclude]
+        [JsonProperty("total_downloads")]
         public int TotalDownloads { get; internal set; }
 
-        [JsonPropertyName("latest")]
-        [JsonInclude]
+        [JsonProperty("latest")]
         public PackageVersion Latest { get; internal set; }
 
-        [JsonPropertyName("community_listings")]
-        [JsonInclude]
+        [JsonProperty("community_listings")]
         public PackageListing[] CommunityListings { get; internal set; }
 
         public bool IsLatestVersion(string current)
@@ -388,75 +352,61 @@ namespace ItemReplacer.Utilities
 
     public class PackageVersion
     {
-        [JsonPropertyName("namespace")]
-        [JsonInclude]
+        [JsonProperty("namespace")]
         public string Namespace { get; internal set; }
 
-        [JsonPropertyName("name")]
-        [JsonInclude]
+        [JsonProperty("name")]
         public string Name { get; internal set; }
 
-        [JsonPropertyName("version_number")]
-        [JsonInclude]
+        [JsonProperty("version_number")]
+
         public string Version
         { get { return SemanticVersion.ToString(); } internal set { SemanticVersion = Semver.SemVersion.Parse(value); } }
 
         [JsonIgnore]
         public SemVersion SemanticVersion { get; internal set; }
 
-        [JsonPropertyName("full_name")]
-        [JsonInclude]
+        [JsonProperty("full_name")]
         public string FullName { get; internal set; }
 
-        [JsonPropertyName("description")]
-        [JsonInclude]
+        [JsonProperty("description")]
         public string Description { get; internal set; }
 
-        [JsonPropertyName("icon")]
-        [JsonInclude]
+        [JsonProperty("icon")]
         public string Icon { get; internal set; }
 
-        [JsonPropertyName("dependencies")]
-        [JsonInclude]
+        [JsonProperty("dependencies")]
         public List<string> Dependencies { get; internal set; }
 
-        [JsonPropertyName("download_url")]
-        [JsonInclude]
-        public string DownloadUrl { get; internal set; }
+        [JsonProperty("download_url")]
 
-        [JsonPropertyName("date_created")]
-        [JsonInclude]
+        public string DownloadURL { get; internal set; }
+
+        [JsonProperty("date_created")]
         public DateTime CreatedAt { get; internal set; }
 
-        [JsonPropertyName("downloads")]
-        [JsonInclude]
+        [JsonProperty("downloads")]
         public int Downloads { get; internal set; }
 
-        [JsonPropertyName("website_url")]
-        [JsonInclude]
+        [JsonProperty("website_url")]
         public string WebsiteURL { get; internal set; }
 
-        [JsonPropertyName("is_active")]
-        [JsonInclude]
+        [JsonProperty("is_active")]
         public bool IsActive { get; internal set; }
     }
 
     public class PackageListing
     {
-        [JsonPropertyName("has_nsfw_content")]
-        [JsonInclude]
+        [JsonProperty("has_nsfw_content")]
         public bool HasNSFWContent { get; internal set; }
 
-        [JsonPropertyName("categories")]
-        [JsonInclude]
+        [JsonProperty("categories")]
         public List<string> Categories { get; internal set; }
 
-        [JsonPropertyName("community")]
-        [JsonInclude]
+        [JsonProperty("community")]
         public string Community { get; internal set; }
 
-        [JsonPropertyName("review_status")]
-        [JsonInclude]
+        [JsonProperty("review_status")]
         public string ReviewStatusString
         {
             get { return ReviewStatusValue.ToString(); }
@@ -485,16 +435,13 @@ namespace ItemReplacer.Utilities
 
     public class V1PackageMetrics
     {
-        [JsonPropertyName("downloads")]
-        [JsonInclude]
+        [JsonProperty("downloads")]
         public int Downloads { get; internal set; }
 
-        [JsonPropertyName("rating_score")]
-        [JsonInclude]
+        [JsonProperty("rating_score")]
         public int RatingScore { get; internal set; }
 
-        [JsonPropertyName("latest_version")]
-        [JsonInclude]
+        [JsonProperty("latest_version")]
         public string LatestVersion
         { get { return LatestSemanticVersion.ToString(); } internal set { LatestSemanticVersion = Semver.SemVersion.Parse(value); } }
 
@@ -529,8 +476,7 @@ namespace ItemReplacer.Utilities
 
     public class ThunderstoreErrorResponse
     {
-        [JsonPropertyName("detail")]
-        [JsonInclude]
+        [JsonProperty("detail")]
         public string Details { get; internal set; }
     }
 
@@ -571,7 +517,7 @@ namespace ItemReplacer.Utilities
                     ThunderstoreErrorResponse error;
                     try
                     {
-                        error = JsonSerializer.Deserialize<ThunderstoreErrorResponse>(_string);
+                        error = JsonConvert.DeserializeObject<ThunderstoreErrorResponse>(_string);
                     }
                     catch (JsonException)
                     {

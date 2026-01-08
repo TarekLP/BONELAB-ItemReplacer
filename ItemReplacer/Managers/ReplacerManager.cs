@@ -28,7 +28,7 @@ namespace ItemReplacer.Managers
 
         public static string ConfigsDir => Path.Combine(PreferencesManager.ConfigDir, "Configs");
 
-        private static SynchronousFileSystemWatcher FileSystemWatcher { get; set; }
+        private static UnityFileSystemWatcher FileSystemWatcher { get; set; }
 
         public static void Setup()
         {
@@ -245,7 +245,7 @@ namespace ItemReplacer.Managers
         {
             LastWrite.Clear();
             FileSystemWatcher?.Dispose();
-            FileSystemWatcher = new SynchronousFileSystemWatcher(ConfigsDir)
+            FileSystemWatcher = new UnityFileSystemWatcher(ConfigsDir)
             {
                 EnableRaisingEvents = true,
                 Filter = "*.json"

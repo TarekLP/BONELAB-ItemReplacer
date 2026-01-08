@@ -117,7 +117,7 @@ namespace ItemReplacer.Managers
             LevelReplacedElement.SetProperty(ElementProperties.NoBorder);
 
             DebugPage.CreateBoolPref("Debug Logging", Color.cyan, ref PreferencesManager.DebugMode);
-            DebugPage.CreateFunction("Dump all barcodes to TXT file", Color.red, DumpBarcodes);
+            DebugPage.CreateFunction("Dump all barcodes to dump.txt", Color.red, DumpBarcodes);
         }
 
         internal static void UpdateDebugCounts()
