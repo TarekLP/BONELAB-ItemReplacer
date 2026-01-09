@@ -243,6 +243,7 @@ namespace ItemReplacer.Managers
 
         internal static void CreateFileWatcher()
         {
+            Core.Logger.Msg("Creating file watcher");
             LastWrite.Clear();
             FileSystemWatcher?.Dispose();
             FileSystemWatcher = new UnityFileSystemWatcher(ConfigsDir)

@@ -1,9 +1,10 @@
 ﻿using MelonLoader;
 
+using BoneLib;
+
+using ItemReplacer.Patches;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
-using BoneLib;
-using ItemReplacer.Patches;
 
 namespace ItemReplacer
 {
@@ -26,7 +27,7 @@ namespace ItemReplacer
 
         public static Thunderstore Thunderstore { get; private set; }
 
-        private bool ThunderstoreNotif = false;
+        private bool thunderstoreNotif;
 
         public override void OnInitializeMelon()
         {
@@ -35,8 +36,11 @@ namespace ItemReplacer
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();
 
+            LoggerInstance.Msg("Checking for updates");
+
             Thunderstore = new($"{ModInfo.Name} / {ModInfo.Version} A BONELAB Mod");
             Thunderstore.BL_FetchPackage(ModInfo.Name, ModInfo.ThunderstoreAuthor, ModInfo.Version, LoggerInstance);
+
             Hooking.OnLevelLoaded += OnLevelLoad;
 
             LoggerInstance.Msg("Setting up replacers");
@@ -54,9 +58,9 @@ namespace ItemReplacer
             if (PreferencesManager.DebugMode?.Value == true) LoggerInstance.Msg("Level Loaded!");
             CrateSpawnerPatches.LevelReplacements = 0;
             MenuManager.UpdateDebugCounts();
-            if (!ThunderstoreNotif)
+            if (!thunderstoreNotif)
             {
-                ThunderstoreNotif = true;
+                thunderstoreNotif = true;
                 Thunderstore.BL_SendNotification();
             }
         }

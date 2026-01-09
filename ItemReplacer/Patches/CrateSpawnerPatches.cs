@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using HarmonyLib;
 
-using Il2CppCysharp.Threading.Tasks;
+using UnityEngine;
 
 using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
@@ -12,7 +13,7 @@ using Il2CppSLZ.Marrow.Warehouse;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
 
-using UnityEngine;
+using Il2CppCysharp.Threading.Tasks;
 
 namespace ItemReplacer.Patches
 {
@@ -112,14 +113,8 @@ namespace ItemReplacer.Patches
 
         private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
         {
-            var scale = new Il2CppSystem.Nullable<Vector3>(Vector3.zero)
-            {
-                hasValue = false,
-            };
-            var groupId = new Il2CppSystem.Nullable<int>(0)
-            {
-                hasValue = false,
-            };
+            var scale = CreateNull(Vector3.zero);
+            var groupId = CreateNull(0);
             var spawnable = new Spawnable()
             {
                 crateRef = new SpawnableCrateReference(barcode),
@@ -131,7 +126,7 @@ namespace ItemReplacer.Patches
 
             var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
             var awaiter = task.GetAwaiter();
-            awaiter.OnCompleted(async () =>
+            awaiter.OnCompleted(() =>
             {
                 try
                 {
@@ -144,13 +139,16 @@ namespace ItemReplacer.Patches
 
                     source.TrySetResult(poolee);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Core.Logger.Error("Error spawning replaced item", e);
                     source.TrySetResult(null);
                 }
             });
         }
+
+        private static Il2CppSystem.Nullable<T> CreateNull<T>(T value) where T : new()
+            => new(value) { hasValue = false };
 
         public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);

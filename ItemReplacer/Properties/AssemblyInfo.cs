@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using MelonLoader;
+﻿using MelonLoader;
 using ItemReplacer;
+using System.Reflection;
 
 #region MelonLoader
 [assembly: MelonInfo(typeof(Core), ModInfo.Name, ModInfo.Version, ModInfo.Author, ModInfo.DownloadLink)]
