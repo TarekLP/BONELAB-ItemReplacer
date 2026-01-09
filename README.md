@@ -15,7 +15,8 @@ The Item Replacer is a code mod designed to replace certain Items with user spec
 # How to Install
 - Drag and Drop Folder into your MelonLoader Mods folder
 
-# Credits
-- [HAHOOS](https://github.com/HAHOOS) for helping me code the Item Replacement Logic and suffering with me
-- [Rexmeck](https://mod.io/g/bonelab/m/rexmecks-weapon-pack-lt#description) for creating the Weapon Pack
-- [RachelCorp](https://mod.io/g/bonelab/m/destructible-dudes#description) for creating the NPC Pack
+# Config Examples
+- [01 - Basics](https://github.com/TarekLP/BONELAB-ItemReplacer/tree/master/Examples/01%20-%20Basics)
+- [02 - RegEx](https://github.com/TarekLP/BONELAB-ItemReplacer/tree/master/Examples/02%20-%20RegEx)
+
+This mod was provided to you by T&H Modding Inc. ([Tarek](https://github.com/TarekLP) and [HAHOOS](https://github.com/HAHOOS))

@@ -28,11 +28,14 @@ This is an example that explains in detail how the Config file works.
 
 ```
 
-[put image here]
+<img width="340" height="80" alt="The Button that appears in the BoneMenu" src="https://github.com/user-attachments/assets/45222f17-1215-4d66-9649-62db5749effc" />
+
 
 The first two properties - `name` and `color` are purely you could say decorational. They are used when creating the page & button in the Menu (as shown in the picture above).
 
 The `id` is a property that MUST be unique, you cannot register two configs with the same ID.
+
+The `$schema` property allows for a code/text editor (like [Visual Studio Code](https://code.visualstudio.com/)) to know how the config file is supposed to work, providing autocompletion, showing descriptions of properties and other useful things.
 
 The replacer can be disabled or enabled using the `enabled` property.
 
