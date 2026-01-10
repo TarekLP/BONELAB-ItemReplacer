@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -12,6 +13,8 @@ namespace ItemReplacer.Managers
         {
             try
             {
+                Log($"Attempting to load dependency: {name}", Core.Logger.Msg, log);
+
                 var assembly = Assembly.GetExecutingAssembly();
 
                 if (assembly == null)
@@ -44,25 +47,21 @@ namespace ItemReplacer.Managers
                 }
 
                 stream.Position = 0;
-                var assemblyMono = AssemblyDefinition.ReadAssembly(stream);
 
-                if (assemblyMono == null && AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName().Name == assemblyMono.Name.Name))
-                {
-                    Log($"{name} is already loaded!", Core.Logger.Msg, log);
-                    return true;
-                }
+                var bytes = stream.ToByteArray();
 
-                byte[] bytes = [];
-                while (true)
+                using (var memStream = new MemoryStream(bytes))
+                using (var assemblyMono = AssemblyDefinition.ReadAssembly(memStream))
                 {
-                    var _byte = stream.ReadByte();
-                    if (_byte == -1)
-                        break;
-                    bytes[bytes.Length] = (byte)_byte;
+                    if (assemblyMono == null && AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName().Name == assemblyMono.Name.Name))
+                    {
+                        Log($"{name} is already loaded!", Core.Logger.Msg, log);
+                        return true;
+                    }
                 }
                 Assembly.Load(bytes);
 
-                if (log) Core.Logger.Msg($"Loaded {name}");
+                Log($"Loaded {name}", Core.Logger.Msg, log);
             }
             catch (Exception ex)
             {
@@ -76,6 +75,13 @@ namespace ItemReplacer.Managers
         {
             if (print)
                 action(message);
+        }
+
+        internal static byte[] ToByteArray(this Stream stream)
+        {
+            using MemoryStream ms = new();
+            stream.CopyTo(ms);
+            return ms.ToArray();
         }
     }
 }

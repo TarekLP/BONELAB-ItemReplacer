@@ -4,7 +4,6 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-		<Platforms>AnyCPU;x64</Platforms>
 
 		<LibsDir>$(SolutionDir)Libs\</LibsDir>
 	</PropertyGroup>
