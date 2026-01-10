@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow.Warehouse;
 
+using Scriban.Runtime;
+
 namespace ItemReplacer.Utilities
 {
     public class ScribanCrate
@@ -19,7 +21,7 @@ namespace ItemReplacer.Utilities
 
         public bool Unlockable { get; }
 
-        public string[] Tags { get; }
+        public ScriptArray<string> Tags { get; }
 
         public ScribanPallet Pallet { get; }
 
@@ -33,7 +35,7 @@ namespace ItemReplacer.Utilities
             if (crate.Tags == null)
                 Tags = [];
             else
-                Tags = crate.Tags.ToArray();
+                Tags = [.. crate.Tags];
             Pallet = pallet ?? new ScribanPallet(crate.Pallet);
 
             if (crate.GetIl2CppType().Name == nameof(SpawnableCrate))
@@ -59,6 +61,29 @@ namespace ItemReplacer.Utilities
 
     public class ScribanPallet
     {
+        public string Title { get; }
+        public string Description { get; }
+        public string Author { get; }
+        public string Barcode { get; }
+
+        public string[] Tags { get; }
+
+        public bool Redacted { get; }
+
+        public bool Unlockable { get; }
+
+        public string Version { get; }
+
+        public string SDKVersion { get; }
+
+        public ScriptArray<ScribanCrate> Crates { get; }
+
+        public ScriptArray<ScribanChangeLog> ChangeLogs { get; }
+
+        public ScriptArray<ScribanDataCard> DataCards { get; }
+
+        public string[] Dependencies { get; }
+
         public ScribanPallet(Pallet pallet)
         {
             Barcode = pallet.Barcode.ID;
@@ -120,32 +145,6 @@ namespace ItemReplacer.Utilities
                 Dependencies = [.. dependencies];
             }
         }
-
-        public bool Redacted
-        { get; }
-
-        public bool Unlockable { get; }
-        public string Barcode { get; }
-
-        public string[] Tags { get; }
-
-        public string Title { get; }
-
-        public string Version { get; }
-
-        public string SDKVersion { get; }
-
-        public string Author { get; }
-
-        public string Description { get; }
-
-        public ScribanCrate[] Crates { get; }
-
-        public ScribanChangeLog[] ChangeLogs { get; }
-
-        public ScribanDataCard[] DataCards { get; }
-
-        public string[] Dependencies { get; }
     }
 
     public class ScribanChangeLog(Pallet.ChangeLog changelog)

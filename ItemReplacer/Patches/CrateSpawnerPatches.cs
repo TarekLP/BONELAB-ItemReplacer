@@ -126,21 +126,14 @@ namespace ItemReplacer.Patches
                     return false;
 
                 var scrate = new ScribanCrate(crate);
-                var scriptObject = new ScriptObject(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "crate", new ScribanCrate(crate) }
-                };
-
+                var scriptObject = new ScriptObject(StringComparer.OrdinalIgnoreCase);
+                scriptObject.SetValue("crate", scrate, true);
                 scriptObject.Import(typeof(ScribanHelper));
-
-                Core.Logger.Msg($"Evaluating Scriban match for barcode: {barcode}");
-                scrate.Tags.ForEach(tag => Core.Logger.Msg($"Tag: {tag}"));
 
                 var templateContext = new TemplateContext();
                 templateContext.PushGlobal(scriptObject);
 
                 var result = entry.Template.Render(templateContext);
-                Core.Logger.Msg($"Scriban result: {result}");
                 return result.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
             }
             else
