@@ -105,7 +105,11 @@ namespace ItemReplacer.Patches
 
                     var replacement = category?.Entries?.FirstOrDefault(e => Match(barcode, e));
                     if (replacement != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(replacement.Replacement))
+                            Core.Logger.Warning($"Replacement in category '{category.Name}' of config '{config.ID}' has no replacement specified. This might be caused by an outdated config.");
                         return replacement.Replacement;
+                    }
                 }
             }
             return null;
