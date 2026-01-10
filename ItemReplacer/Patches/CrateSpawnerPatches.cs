@@ -4,20 +4,23 @@ using System.Text.RegularExpressions;
 
 using HarmonyLib;
 
-using UnityEngine;
+using Il2CppCysharp.Threading.Tasks;
 
 using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
+using ItemReplacer.Helpers;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
 
-using Il2CppCysharp.Threading.Tasks;
+using Scriban;
+using Scriban.Runtime;
+
+using UnityEngine;
 
 namespace ItemReplacer.Patches
 {
-
     [HarmonyPatch(typeof(CrateSpawner))]
     internal static class CrateSpawnerPatches
     {
@@ -28,7 +31,7 @@ namespace ItemReplacer.Patches
         [HarmonyPrefix]
         [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
-        public static bool Prefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
+        public static bool SpawnSpawnableAsyncPrefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
             try
             {
@@ -69,15 +72,12 @@ namespace ItemReplacer.Patches
                         __result = res ?? new UniTask<Poolee>(null);
                         ReplacedSuccess();
                         return false;
-
                     }
                     return false;
-
                 }
                 return true;
-
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
                 return true;
@@ -103,12 +103,50 @@ namespace ItemReplacer.Patches
                     if (category?.Enabled != true)
                         continue;
 
-                    var replacement = category?.Entries?.FirstOrDefault(e => e.IsRegEx ? Regex.IsMatch(barcode, e.Original) : barcode == e.Original);
+                    var replacement = category?.Entries?.FirstOrDefault(e => Match(barcode, e));
                     if (replacement != null)
-                        return replacement.ReplaceWith;
+                        return replacement.Replacement;
                 }
             }
             return null;
+        }
+
+        private static bool Match(string barcode, ReplacerEntry entry)
+        {
+            if (entry.MatchType == MatchType.RegEx)
+            {
+                return Regex.IsMatch(barcode, entry.Original);
+            }
+            else if (entry.MatchType == MatchType.Scriban)
+            {
+                if (entry.Template?.HasErrors != false)
+                    return false;
+
+                if (!AssetWarehouse.Instance.TryGetCrate(new Barcode(barcode), out var crate))
+                    return false;
+
+                var scrate = new ScribanCrate(crate);
+                var scriptObject = new ScriptObject(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "crate", new ScribanCrate(crate) }
+                };
+
+                scriptObject.Import(typeof(ScribanHelper));
+
+                Core.Logger.Msg($"Evaluating Scriban match for barcode: {barcode}");
+                scrate.Tags.ForEach(tag => Core.Logger.Msg($"Tag: {tag}"));
+
+                var templateContext = new TemplateContext();
+                templateContext.PushGlobal(scriptObject);
+
+                var result = entry.Template.Render(templateContext);
+                Core.Logger.Msg($"Scriban result: {result}");
+                return result.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return barcode == entry.Original;
+            }
         }
 
         private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
@@ -152,6 +190,5 @@ namespace ItemReplacer.Patches
 
         public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);
-
     }
 }

@@ -11,6 +11,15 @@
 
 	<ItemGroup>
 		<Reference Include="$(LibsDir)*.dll" />
+		<Reference Include="Dependencies\*.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Dependencies\Scriban.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Dependencies\Scriban.dll" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

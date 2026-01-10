@@ -22,7 +22,6 @@ namespace ItemReplacer
 
     public class Core : MelonMod
     {
-
         public static MelonLogger.Instance Logger { get; private set; }
 
         public static Thunderstore Thunderstore { get; private set; }
@@ -32,6 +31,9 @@ namespace ItemReplacer
         public override void OnInitializeMelon()
         {
             Logger = LoggerInstance;
+
+            LoggerInstance.Msg("Loading dependencies");
+            DependencyManager.TryLoadDependency("Scriban");
 
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();

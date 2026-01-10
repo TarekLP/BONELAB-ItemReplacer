@@ -13,6 +13,8 @@ using ItemReplacer.Utilities;
 using System.ComponentModel;
 using JsonException = System.Text.Json.JsonException;
 
+using Scriban;
+
 namespace ItemReplacer.Managers
 {
     // This shit is just copied from KeepInventory
@@ -41,7 +43,7 @@ namespace ItemReplacer.Managers
             }
 
             Core.Logger.Msg("Loading configs from directory...");
-            var files = Directory.GetFiles(ConfigsDir);
+            var files = Directory.GetFiles(ConfigsDir, "*.json");
             if (files?.Length > 0)
             {
                 foreach (var item in files)
@@ -91,7 +93,6 @@ namespace ItemReplacer.Managers
                 file.Flush();
                 file.Position = 0;
                 file.Dispose();
-
             }
 
             MenuManager.SetupReplacers();
@@ -102,6 +103,9 @@ namespace ItemReplacer.Managers
             Core.Logger.Msg($"Registering replacer from file: '{filePath}'");
             if (File.Exists(filePath))
             {
+                if (Path.GetExtension(filePath)?.ToLower() != ".json")
+                    throw new ArgumentException("The file must be a JSON file");
+
                 string text = ReadAllTextUsedFile(filePath);
                 if (string.IsNullOrWhiteSpace(text) || !IsJSON(text))
                 {
@@ -306,7 +310,6 @@ namespace ItemReplacer.Managers
                 var config = Configs.FirstOrDefault(x => x.FilePath == args.FullPath);
                 if (config != null)
                     UnregisterFile(config.FilePath);
-
             }
             MenuManager.SetupReplacers();
         }
@@ -325,7 +328,6 @@ namespace ItemReplacer.Managers
             {
                 Core.Logger.Msg($"{args.Name} has been renamed to {args.Name}, but wasn't registered. Registering replacer");
                 Register(args.FullPath);
-
             }
             else
             {
@@ -422,7 +424,6 @@ namespace ItemReplacer.Managers
         [JsonConstructor]
         public ReplacerConfig()
         {
-
         }
 
         [JsonProperty("name")]
@@ -431,7 +432,6 @@ namespace ItemReplacer.Managers
         // HEX Color Code
         [JsonProperty("color")]
         public string Color { get; set; }
-
 
         [JsonProperty("id")]
         public string ID { get; set; }
@@ -449,7 +449,6 @@ namespace ItemReplacer.Managers
         public List<ReplacerCategory> Categories { get; set; }
 
         internal bool AutoUpdate(string path) => FilePath == path && IsFileWatcherEnabled;
-
 
         public void SaveToFile(bool printMessage = true)
         {
@@ -568,8 +567,6 @@ namespace ItemReplacer.Managers
                 }
             }
         }
-
-
     }
 
     public class ReplacerCategory
@@ -598,17 +595,106 @@ namespace ItemReplacer.Managers
         public List<ReplacerEntry> Entries { get; set; }
     }
 
-    [method: JsonConstructor]
-    public class ReplacerEntry(string original, string replaceWith, bool isRegEx = false)
+    public class ReplacerEntry
     {
+        public ReplacerEntry(string original, string replacement, MatchType matchType = MatchType.Compare)
+        {
+            Original = original;
+            Replacement = replacement;
+            MatchType = matchType;
+        }
+
+        [JsonConstructor]
+        public ReplacerEntry(string original, string replacement, string type)
+        {
+            Original = original;
+            Replacement = replacement;
+            Type = type;
+        }
+
+        [JsonIgnore]
+        private string _original;
+
         [JsonProperty("original")]
-        public string Original { get; set; } = original;
+        public string Original
+        {
+            get => _original;
+            set
+            {
+                _original = value;
+                ParseTemplate();
+            }
+        }
 
-        [JsonProperty("replaceWith")]
-        public string ReplaceWith { get; set; } = replaceWith;
+        [JsonProperty("replacement")]
+        public string Replacement { get; set; }
 
-        [DefaultValue(false)]
-        [JsonProperty("isRegEx", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public bool IsRegEx { get; set; } = isRegEx;
+        [DefaultValue("compare")]
+        [JsonProperty("type", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public string Type
+        {
+            get
+            {
+                if (MatchType == MatchType.Compare)
+                    return "compare";
+                else if (MatchType == MatchType.RegEx)
+                    return "regex";
+                else if (MatchType == MatchType.Scriban)
+                    return "scriban";
+                else
+                    return "compare";
+            }
+            set
+            {
+                if (string.Equals(value, "compare", StringComparison.OrdinalIgnoreCase))
+                    MatchType = MatchType.Compare;
+                else if (string.Equals(value, "regex", StringComparison.OrdinalIgnoreCase))
+                    MatchType = MatchType.RegEx;
+                else if (string.Equals(value, "scriban", StringComparison.OrdinalIgnoreCase))
+                    MatchType = MatchType.Scriban;
+                else
+                    MatchType = MatchType.Compare;
+            }
+        }
+
+        [JsonIgnore]
+        private MatchType _matchType;
+
+        [JsonIgnore]
+        public MatchType MatchType
+        {
+            get => _matchType;
+            set
+            {
+                _matchType = value;
+                ParseTemplate();
+            }
+        }
+
+        [JsonIgnore]
+        public Template Template { get; set; }
+
+        private void ParseTemplate()
+        {
+            if (_matchType != MatchType.Scriban)
+                return;
+
+            Template = Template.Parse(_original);
+            if (Template.HasErrors)
+            {
+                Core.Logger.Error("Error parsing Scriban template: " + _original);
+                foreach (var error in Template.Messages)
+                {
+                    Core.Logger.Error($"{(error.Type == Scriban.Parsing.ParserMessageType.Error ? "[ERR]" : "[WARN]")} {error.Message}");
+                }
+            }
+        }
+    }
+
+    public enum MatchType
+    {
+        Compare,
+        RegEx,
+        Scriban
     }
 }
