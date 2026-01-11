@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow.Warehouse;
 
+using ItemReplacer.Managers;
+
+using Scriban;
 using Scriban.Runtime;
 
 namespace ItemReplacer.Utilities
@@ -206,6 +209,30 @@ namespace ItemReplacer.Utilities
                 return new ScribanPallet(pallet);
             }
             return null;
+        }
+    }
+
+    public static class ScribanMatcher
+    {
+        public static bool Match(string barcode, ReplacerEntry entry)
+        {
+            if (entry.Template?.HasErrors != false)
+                return false;
+
+            if (!AssetWarehouse.Instance.TryGetCrate(new Barcode(barcode), out var crate))
+                return false;
+
+            var scrate = new ScribanCrate(crate);
+
+            var scriptObject = new ScriptObject(StringComparer.OrdinalIgnoreCase);
+            scriptObject.Import(scrate);
+            scriptObject.Import(typeof(ScribanHelper));
+
+            var templateContext = new TemplateContext();
+            templateContext.PushGlobal(scriptObject);
+
+            var result = entry.Template.Render(templateContext);
+            return result.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

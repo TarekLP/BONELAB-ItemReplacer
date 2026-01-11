@@ -120,30 +120,9 @@ namespace ItemReplacer.Patches
             if (entry.MatchType == MatchType.RegEx)
                 return Regex.IsMatch(barcode, entry.Original);
             else if (entry.MatchType == MatchType.Scriban)
-                return Scriban(barcode, entry);
+                return ScribanMatcher.Match(barcode, entry);
             else
                 return barcode == entry.Original;
-        }
-
-        private static bool Scriban(string barcode, ReplacerEntry entry)
-        {
-            if (entry.Template?.HasErrors != false)
-                return false;
-
-            if (!AssetWarehouse.Instance.TryGetCrate(new Barcode(barcode), out var crate))
-                return false;
-
-            var scrate = new ScribanCrate(crate);
-
-            var scriptObject = new ScriptObject(StringComparer.OrdinalIgnoreCase);
-            scriptObject.Import(scrate);
-            scriptObject.Import(typeof(ScribanHelper));
-
-            var templateContext = new TemplateContext();
-            templateContext.PushGlobal(scriptObject);
-
-            var result = entry.Template.Render(templateContext);
-            return result.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
