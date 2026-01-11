@@ -23,6 +23,8 @@ namespace ItemReplacer.Utilities
 
         public ScriptArray<string> Tags { get; }
 
+        public ScriptArray<ScribanBoneTag> BoneTags { get; }
+
         public ScribanPallet Pallet { get; }
 
         public ScribanCrate(Crate crate, ScribanPallet pallet = null)
@@ -37,6 +39,17 @@ namespace ItemReplacer.Utilities
             else
                 Tags = [.. crate.Tags];
             Pallet = pallet ?? new ScribanPallet(crate.Pallet);
+
+            if (crate.BoneTags == null || crate.BoneTags.Tags == null)
+            {
+                BoneTags = [];
+            }
+            else
+            {
+                List<ScribanBoneTag> scribanBoneTags = [];
+                crate.BoneTags.Tags.ForEach((Action<BoneTagReference>)(c => scribanBoneTags.Add(new ScribanBoneTag(c.DataCard, Pallet))));
+                BoneTags = [.. scribanBoneTags];
+            }
 
             if (crate.GetIl2CppType().Name == nameof(SpawnableCrate))
                 Type = CrateType.Spawnable;
@@ -168,6 +181,20 @@ namespace ItemReplacer.Utilities
         public bool Unlockable { get; } = dataCard.Unlockable;
 
         public ScribanPallet Pallet { get; } = pallet ?? new ScribanPallet(dataCard.Pallet);
+    }
+
+    public class ScribanBoneTag(BoneTag boneTag, ScribanPallet pallet = null)
+    {
+        public string Title { get; } = boneTag.Title;
+        public string Description { get; } = boneTag.Description;
+
+        public string Barcode { get; } = boneTag.Barcode.ID;
+
+        public bool Redacted { get; } = boneTag.Redacted;
+
+        public bool Unlockable { get; } = boneTag.Unlockable;
+
+        public ScribanPallet Pallet { get; } = pallet ?? new ScribanPallet(boneTag.Pallet);
     }
 
     public static class ScribanHelper

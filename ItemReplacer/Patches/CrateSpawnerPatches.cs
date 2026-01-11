@@ -155,7 +155,6 @@ namespace ItemReplacer.Patches
                 crateRef = new SpawnableCrateReference(barcode),
                 policyData = null
             };
-
             // Note to future self: you have to register it, it doesnt work otherwise.
             AssetSpawner.Register(spawnable);
 
