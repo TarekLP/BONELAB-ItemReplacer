@@ -69,7 +69,9 @@ namespace ItemReplacer.Managers
 
                 Page page = PageFromConfig(config);
 
-                ReplacersPage.CreatePageLink(page);
+                var link = ReplacersPage.CreatePageLink(page);
+                if (!string.IsNullOrWhiteSpace(config.Description))
+                    link.SetTooltip(config.Description);
 
                 page.RemoveAll();
 
@@ -94,6 +96,8 @@ namespace ItemReplacer.Managers
                         elem.ElementColor = StateColor(x.Enabled);
                         config.SaveToFile(false);
                     });
+                    if (!string.IsNullOrWhiteSpace(x.Description))
+                        elem.SetTooltip(x.Description);
                 });
 
                 if (Menu.CurrentPage == page)
@@ -109,7 +113,6 @@ namespace ItemReplacer.Managers
             if (DebugPage == null)
                 return;
             DebugPage.RemoveAll();
-
 
             TotalReplacedElement = DebugPage.CreateFunction($"Total Replaced: {CrateSpawnerPatches.TotalReplacements}", Color.white, null);
             LevelReplacedElement = DebugPage.CreateFunction($"Level Replaced: {CrateSpawnerPatches.LevelReplacements}", Color.white, null);
@@ -201,12 +204,14 @@ namespace ItemReplacer.Managers
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable S3011 // Make sure that this accessibility bypass is safe here
+
         private static void CorrectPage(Page page)
         {
             GUIMenu.Instance.GetType().GetMethod("DrawHeader",
                             bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance)
                 .Invoke(GUIMenu.Instance, [page]);
         }
+
 #pragma warning restore S3011, IDE0079 // Remove unnecessary suppression
 
         private static Color GetColor(this ReplacerConfig config)

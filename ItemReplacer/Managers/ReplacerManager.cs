@@ -412,9 +412,10 @@ namespace ItemReplacer.Managers
 
     public class ReplacerConfig
     {
-        public ReplacerConfig(string name, string color, string id, List<ReplacerCategory> categories, bool enabled = true)
+        public ReplacerConfig(string name, string description, string color, string id, List<ReplacerCategory> categories, bool enabled = true)
         {
             ID = id;
+            Description = description;
             Name = name;
             Color = color;
             Categories = categories;
@@ -428,6 +429,9 @@ namespace ItemReplacer.Managers
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
 
         // HEX Color Code
         [JsonProperty("color")]
@@ -572,9 +576,10 @@ namespace ItemReplacer.Managers
     public class ReplacerCategory
     {
         [JsonConstructor]
-        public ReplacerCategory(string name, List<ReplacerEntry> entries, bool enabled = true)
+        public ReplacerCategory(string name, string description, List<ReplacerEntry> entries, bool enabled = true)
         {
             Name = name;
+            Description = description;
             Entries = entries;
             Enabled = enabled;
         }
@@ -587,6 +592,9 @@ namespace ItemReplacer.Managers
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
 
         [JsonProperty("enabled")]
         public bool Enabled { get; set; }
