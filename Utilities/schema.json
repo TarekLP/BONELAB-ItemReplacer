@@ -87,7 +87,18 @@
                   "enum": ["compare", "regex", "scriban"]
                 }
               },
-              "required": ["original", "replacement"]
+              "additionalProperties": false,
+              "required": ["original", "replacement"],
+              "if": {
+                "properties": {
+                  "type": { "const": "regex" }
+                }
+              },
+              "then": {
+                "properties": {
+                  "original": { "format": "regex" }
+                }
+              }
             }
           }
         },
