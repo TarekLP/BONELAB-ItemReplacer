@@ -11,6 +11,7 @@ namespace ItemReplacer.Utilities
     internal static class Fusion
     {
         public static bool HasFusion => Core.FindMelon("LabFusion", "Lakatrazz") != null;
+
         public static bool IsConnected
         {
             get
@@ -55,10 +56,7 @@ namespace ItemReplacer.Utilities
             if (spawnable?.crateRef.IsValid() != true)
                 return;
 
-
             var transform = spawner.transform;
-
-
 
             LabFusion.RPC.NetworkAssetSpawner.Spawn(new LabFusion.RPC.NetworkAssetSpawner.SpawnRequestInfo()
             {
@@ -74,11 +72,9 @@ namespace ItemReplacer.Utilities
             if (_info is not LabFusion.RPC.NetworkAssetSpawner.SpawnCallbackInfo info)
                 return;
 
-
             // In the event that the CrateSpawner was part of a now destroyed GameObject, null check
             if (spawner == null)
                 return;
-
 
             var spawned = info.Spawned;
 
@@ -94,8 +90,8 @@ namespace ItemReplacer.Utilities
             var spawnedID = info.Entity.ID;
 
             LabFusion.Marrow.Messages.CrateSpawnerMessage.SendCrateSpawnerMessage(spawner, spawnedID);
-
         }
+
         internal static bool HandleFusionCrateSpawner(string barcode, CrateSpawner spawner, out UniTask<Poolee> res)
         {
             res = null;
@@ -104,10 +100,8 @@ namespace ItemReplacer.Utilities
             if (!LabFusion.Scene.NetworkSceneManager.IsLevelNetworked)
                 return true;
 
-
             if (IsSingleplayerOnly(spawner))
                 return true;
-
 
             // If we don't own the CrateSpawner, don't allow a spawn from it
             if (!HasOwnership(spawner))
@@ -147,19 +141,39 @@ namespace ItemReplacer.Utilities
             if (LabFusion.Marrow.Integration.Desyncer.Cache.ContainsSource(crateSpawner.gameObject))
                 return true;
 
-
             var spawnable = crateSpawner._spawnable;
 
             if (spawnable == null)
                 return false;
 
-
             if (!spawnable.crateRef.IsValid() || spawnable.crateRef.Crate == null)
                 return false;
 
-
             // Check for the Singleplayer Only tag
             return LabFusion.Marrow.CrateFilterer.HasTags(spawnable.crateRef.Crate, LabFusion.Marrow.FusionTags.SingleplayerOnly);
+        }
+
+        public static void RequestInstall(int modId, Action<ModResult> callback)
+        {
+            if (HasFusion) Internal_RequestInstall(modId, callback);
+        }
+
+        private static void Internal_RequestInstall(int modId, Action<ModResult> callback)
+        {
+            LabFusion.Downloading.ModIO.ModIODownloader.EnqueueDownload(new()
+            {
+                ModFile = new(modId),
+                Temporary = false,
+                Callback = (c) => callback?.Invoke((ModResult)c.Result)
+            });
+        }
+
+        public enum ModResult
+        {
+            NONE,
+            FAILED,
+            SUCCEEDED,
+            CANCELED
         }
     }
 }

@@ -452,6 +452,9 @@ namespace ItemReplacer.Managers
         [JsonProperty("categories")]
         public List<ReplacerCategory> Categories { get; set; }
 
+        [JsonProperty("dependencies")]
+        public List<ReplacerDependency> Dependencies { get; set; }
+
         internal bool AutoUpdate(string path) => FilePath == path && IsFileWatcherEnabled;
 
         public void SaveToFile(bool printMessage = true)
@@ -697,6 +700,30 @@ namespace ItemReplacer.Managers
                 }
             }
         }
+    }
+
+    public class ReplacerDependency
+    {
+        public ReplacerDependency(string title, string barcode, int modId)
+        {
+            Title = title;
+            Barcode = barcode;
+            ModID = modId;
+        }
+
+        [JsonConstructor]
+        public ReplacerDependency()
+        {
+        }
+
+        [JsonProperty("title")]
+        public string Title { get; set; }
+
+        [JsonProperty("barcode")]
+        public string Barcode { get; set; }
+
+        [JsonProperty("modId")]
+        public int ModID { get; set; }
     }
 
     public enum MatchType

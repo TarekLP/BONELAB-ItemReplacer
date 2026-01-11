@@ -5,6 +5,7 @@ using BoneLib;
 using ItemReplacer.Patches;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
+using Il2CppSLZ.Marrow.Warehouse;
 
 namespace ItemReplacer
 {
@@ -49,8 +50,11 @@ namespace ItemReplacer
             ReplacerManager.Setup();
             ReplacerManager.CreateFileWatcher();
 
-            LoggerInstance.Msg("Setting up BoneMenu");
-            MenuManager.Setup();
+            AssetWarehouse._onReady += (System.Action)(() =>
+            {
+                LoggerInstance.Msg("Setting up BoneMenu");
+                MenuManager.Setup();
+            });
 
             LoggerInstance.Msg("Initialized.");
         }
