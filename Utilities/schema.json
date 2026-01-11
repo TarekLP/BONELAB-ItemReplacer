@@ -36,6 +36,8 @@
     },
     "color": {
       "type": "string",
+      "format": "color",
+      "pattern": "#[a-fA-F0-9]{6}",
       "description": "The color of the button in BoneMenu that allows for managing the replacer"
     },
     "id": {
