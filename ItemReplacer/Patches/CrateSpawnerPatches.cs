@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 using HarmonyLib;
 
-using Il2CppCysharp.Threading.Tasks;
-
 using Il2CppSLZ.Marrow.Data;
-using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
-
-using UnityEngine;
 
 namespace ItemReplacer.Patches
 {
