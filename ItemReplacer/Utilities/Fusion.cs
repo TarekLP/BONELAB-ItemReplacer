@@ -64,6 +64,7 @@ namespace ItemReplacer.Utilities
                 Position = transform.position,
                 Rotation = transform.rotation,
                 SpawnCallback = (info) => OnNetworkSpawn(spawner, info, source),
+                SpawnSource = LabFusion.Entities.EntitySource.Scene
             });
         }
 
@@ -94,7 +95,7 @@ namespace ItemReplacer.Utilities
 
         internal static bool HandleFusionCrateSpawner(string barcode, CrateSpawner spawner, out UniTask<Poolee> res)
         {
-            res = null;
+            res = new UniTask<Poolee>(null);
 
             // If this scene is unsynced, the spawner can function as normal.
             if (!LabFusion.Scene.NetworkSceneManager.IsLevelNetworked)

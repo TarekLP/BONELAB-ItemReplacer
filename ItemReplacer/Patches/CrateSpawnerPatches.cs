@@ -10,12 +10,8 @@ using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
-using ItemReplacer.Helpers;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
-
-using Scriban;
-using Scriban.Runtime;
 
 using UnityEngine;
 
@@ -56,10 +52,11 @@ namespace ItemReplacer.Patches
                     }
 
                     if (PreferencesManager.IsDebug())
-                        Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
+                        Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
                     if (!Fusion.IsConnected)
                     {
+                        // fuck this code, the UniTaskCompletionSource does not work correctly (probably fires too late, causing bugs)
                         var source = new UniTaskCompletionSource<Poolee>();
                         __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
                         SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
@@ -68,10 +65,7 @@ namespace ItemReplacer.Patches
                     }
                     else if (PreferencesManager.FusionSupport?.Value == true)
                     {
-                        Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
-                        __result = res ?? new UniTask<Poolee>(null);
-                        ReplacedSuccess();
-                        return false;
+                        return FusionSpawn(__instance, targetBarcode, out __result);
                     }
                     return false;
                 }
@@ -82,6 +76,19 @@ namespace ItemReplacer.Patches
                 Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
                 return true;
             }
+        }
+
+        private static bool FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
+        {
+            if (Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out __result))
+            {
+                var source = new UniTaskCompletionSource<Poolee>();
+                __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
+                SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+            }
+
+            ReplacedSuccess();
+            return false;
         }
 
         private static void ReplacedSuccess()
@@ -129,39 +136,29 @@ namespace ItemReplacer.Patches
         {
             var scale = CreateNull(Vector3.zero);
             var groupId = CreateNull(0);
-            var spawnable = new Spawnable()
-            {
-                crateRef = new SpawnableCrateReference(barcode),
-                policyData = null
-            };
+            var spawnable = CreateSpawnable(barcode);
+
             // Note to future self: you have to register it, it doesnt work otherwise.
             AssetSpawner.Register(spawnable);
 
             var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
             var awaiter = task.GetAwaiter();
-            awaiter.OnCompleted(() =>
-            {
-                try
-                {
-                    var poolee = awaiter.GetResult();
-                    if (poolee == null)
-                    {
-                        source.TrySetResult(null);
-                        return;
-                    }
 
-                    source.TrySetResult(poolee);
-                }
-                catch (Exception e)
-                {
-                    Core.Logger.Error("Error spawning replaced item", e);
-                    source.TrySetResult(null);
-                }
-            });
+            void continuation()
+            {
+                var poolee = awaiter.GetResult();
+                if (poolee == null)
+                    return;
+
+                source.TrySetResult(poolee);
+            }
+            awaiter.OnCompleted(continuation);
         }
 
         private static Il2CppSystem.Nullable<T> CreateNull<T>(T value) where T : new()
             => new(value) { hasValue = false };
+
+        public static Spawnable CreateSpawnable(string barcode) => new() { crateRef = new(barcode), policyData = null };
 
         public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);
