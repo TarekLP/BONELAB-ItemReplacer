@@ -5,6 +5,7 @@ using BoneLib;
 using ItemReplacer.Patches;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
+using Il2CppSLZ.Marrow.Warehouse;
 
 namespace ItemReplacer
 {
@@ -22,16 +23,21 @@ namespace ItemReplacer
 
     public class Core : MelonMod
     {
-
         public static MelonLogger.Instance Logger { get; private set; }
 
         public static Thunderstore Thunderstore { get; private set; }
 
         private bool thunderstoreNotif;
 
+        public static Core Instance { get; private set; }
+
         public override void OnInitializeMelon()
         {
+            Instance = this;
             Logger = LoggerInstance;
+
+            LoggerInstance.Msg("Loading dependencies");
+            DependencyManager.LoadDependencies();
 
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();
@@ -47,8 +53,11 @@ namespace ItemReplacer
             ReplacerManager.Setup();
             ReplacerManager.CreateFileWatcher();
 
-            LoggerInstance.Msg("Setting up BoneMenu");
-            MenuManager.Setup();
+            AssetWarehouse._onReady += (System.Action)(() =>
+            {
+                LoggerInstance.Msg("Setting up BoneMenu");
+                MenuManager.Setup();
+            });
 
             LoggerInstance.Msg("Initialized.");
         }
