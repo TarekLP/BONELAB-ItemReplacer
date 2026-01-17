@@ -1,3 +1,7 @@
+# Barcode List
+
+
+## Levels
 | Category | Name | Barcode |
 | :--- | :--- | :--- |
 | **Levels** | Load Default | fa534c5a83ee4ec6bd641fec424c4142.Level.DefaultLoad |
@@ -35,6 +39,10 @@
 | **Levels** | Rooftops | c2534c5a-c6ac-48b4-9c5f-b5cd5363656e |
 | **Levels** | Tunnel Tipper | c2534c5a-c180-40e0-b2b7-325c5363656e |
 | **Levels** | Tuscany | c2534c5a-2c4c-4b44-b076-203b5363656e |
+
+## NPCs
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **NPCs** | Boid | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.NPCBoid |
 | **NPCs** | BoidBall | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.NPCBoidBall |
 | **NPCs** | BoxTurret | SLZ.BONELAB.Content.Spawnable.BoxTurret |
@@ -64,6 +72,10 @@
 | **NPCs** | Void Turret | c1534c5a-290e-4d56-9b8e-ad95566f6964 |
 | **NPCs** | Angry Void Radiation | SLZ.BONELAB.Content.Spawnable.AngryVoidRadiation |
 | **NPCs** | Utility - Seeker | SLZ.BONELAB.Content.Spawnable.Seeker |
+
+## Avatars
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Avatars** | PolyBlank | c3534c5a-94b2-40a4-912a-24a8506f6c79 |
 | **Avatars** | Dog - Duck Season | SLZ.BONELAB.Content.Avatar.DogDuckSeason |
 | **Avatars** | Fast | fa534c5a83ee4ec6bd641fec424c4142.Avatar.Fast |
@@ -85,6 +97,10 @@
 | **Avatars** | Peasant Male B | c3534c5a-f12c-44ef-b953-b8a850656173 |
 | **Avatars** | Peasant Male C | c3534c5a-3763-4ddf-bd86-6ca850656173 |
 | **Avatars** | Security Guard | c3534c5a-d388-4945-b4ff-9c7a53656375 |
+
+## Guns
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Guns** | 1911 | c1534c5a-fcfc-4f43-8fb0-d29531393131 |
 | **Guns** | 590A1 | c1534c5a-7f05-402f-9320-609647756e35 |
 | **Guns** | AKM | c1534c5a-a6b5-4177-beb8-04d947756e41 |
@@ -120,6 +136,10 @@
 | **Guns** | UMP | c1534c5a-40e5-40e0-8139-194347756e55 |
 | **Guns** | UZI | c1534c5a-8d03-42de-93c7-f595534d4755 |
 | **Guns** | Vector | c1534c5a-4c47-428d-b5a5-b05747756e56 |
+
+## Melee
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Melee** | Axe Double | c1534c5a-6d6b-4414-a9f2-af034d656c65 |
 | **Melee** | Axe Firefighter | c1534c5a-4774-460f-a814-149541786546 |
 | **Melee** | Axe Horror | c1534c5a-0ba6-4876-be9c-216741786548 |
@@ -158,6 +178,10 @@
 | **Melee** | Viking Shield | c1534c5a-6d15-47c7-9ad4-b04156696b69 |
 | **Melee** | Warhammer | c1534c5a-f6f3-46e2-aa51-67214d656c65 |
 | **Melee** | Wrench | c1534c5a-02e7-43cf-bc8d-26955772656e |
+
+## Ammo
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Ammo** | Ammo Box Light | c1534c5a-683b-4c01-b378-6795416d6d6f |
 | **Ammo** | Ammo Box Heavy | c1534c5a-97a9-43f7-be30-6095416d6d6f |
 | **Ammo** | Ammo Box Medium | c1534c5a-57d4-4468-b5f0-c795416d6d6f |
@@ -202,8 +226,12 @@
 | **Ammo** | Vector Mag | c1534c5a-3030-4338-bf76-b67c4d616761 |
 | **Ammo** | Eder Mag | c1534c5a-e45e-4f53-a9ae-3c954d616761 |
 | **Ammo** | Bullet Banker | SLZ.BONELAB.Content.Spawnable.BulletBanker |
+
+
+## Gadgets / DevTools
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Gadgets** | Spawn Gun | c1534c5a-5747-42a2-bd08-ab3b47616467 |
-| **Gadgets** | Spawn Gun UI | SLZ.BONELAB.Content.Spawnable.SpawnGunUI |
 | **Gadgets** | Nimbus Gun | c1534c5a-6b38-438a-a324-d7e147616467 |
 | **Gadgets** | Boardgun | c1534c5a-e777-4d15-b0c1-3195426f6172 |
 | **Gadgets** | Constrainer | c1534c5a-3813-49d6-a98c-f595436f6e73 |
@@ -221,9 +249,16 @@
 | **Gadgets** | Cardboard Blaster | c1534c5a-bd80-465e-b8e2-9795426c6173 |
 | **Gadgets** | Flashlight | c1534c5a-38df-474e-abb3-7e81466c6173 |
 | **Gadgets** | Plunger | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.Plunger |
+
+## Vehicles
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Vehicles** | Gokart | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VehicleGokart |
 | **Vehicles** | Minecart | SLZ.BONELAB.Content.Spawnable.Minecart |
-| **Vehicles** | Lunar Landerr | SLZ.BONELAB.Content.Spawnable.LunarLander |
+
+## General Props
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **General Props** | Alarm Clock | SLZ.BONELAB.Content.Spawnable.AlarmClock |
 | **General Props** | Apollo Blue | SLZ.BONELAB.Content.Spawnable.BlueApollo |
 | **General Props** | Apollo Giant | SLZ.BONELAB.Content.Spawnable.ApolloGiant |
@@ -413,6 +448,11 @@
 | **General Props** | Gacha Capsule | SLZ.BONELAB.Content.Spawnable.UtilityGachaCapsule |
 | **General Props** | Spawner Gacha Capsule | SLZ.BONELAB.Content.Spawnable.SpawnerGachaCapsule |
 | **General Props** | Projectile - Gacha Spawn | SLZ.BONELAB.Content.Spawnable.ProjectileGachaSpawn |
+
+
+## Shape Props
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Shape Props** | Gym Arch | c1534c5a-df6a-4c22-8317-44fd47796d41 |
 | **Shape Props** | Gym Beam | c1534c5a-1da1-47fa-accc-95ed47796d42 |
 | **Shape Props** | Gym Block A | c1534c5a-d80e-4a91-8081-ba1950726f70 |
@@ -451,6 +491,10 @@
 | **Shape Props** | Gym Trapezoid C | c1534c5a-dea1-42b4-b95f-6b6f50726f70 |
 | **Shape Props** | Gym Trapezoid D | c1534c5a-66b3-4a1c-ad8d-9f7a50726f70 |
 | **Shape Props** | Gym Trapezoid E | c1534c5a-060f-44b5-ac72-d88450726f70 |
+
+## Cardboard Boxes
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Cardboard** | Cardboard Box Apollo | SLZ.BONELAB.Content.Spawnable.CardboardBoxApollo |
 | **Cardboard** | Cardboard Box Asphalt | SLZ.BONELAB.Content.Spawnable.CardboardBoxAsphalt |
 | **Cardboard** | Cardboard Box Basketball | SLZ.BONELAB.Content.Spawnable.CardboardBoxBasketball |
@@ -496,6 +540,91 @@
 | **Cardboard** | Cardboard Box Trays | SLZ.BONELAB.Content.Spawnable.CardboardBoxTrays |
 | **Cardboard** | Cardboard Box Woodplank | SLZ.BONELAB.Content.Spawnable.CardboardBoxWoodplank |
 | **Cardboard** | Cardboard Box | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.DestcardboardBox |
+
+## Other
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
+| **Other** | Anime Collect Blaster | c1534c5a-b658-4b46-abd0-1c47426c6173 |
+| **Other** | Anime Smoker Blaster | c1534c5a-f2eb-46a8-8aad-538e426c6173 |
+| **Other** | Blood Bag Blaster | c1534c5a-1ea0-4156-920b-f8a8426c6173 |
+| **Other** | Bullets Blaster | c1534c5a-cc53-41f1-b76f-a384426c6173 |
+| **Other** | Blaster - Confetti Cannon | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.BlasterConfettiCannon |
+| **Other** | Confetti Flash Cannon | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.ConfettiPoofCannon |
+| **Other** | Confetti Blaster | c1534c5a-03ab-42ef-a0e5-e595426c6173 |
+| **Other** | Dust Blaster | c1534c5a-ded9-4a3c-8a79-a16f426c6173 |
+| **Other** | Blaster - Fire | SLZ.BONELAB.CORE.Spawnable.BlasterFire |
+| **Other** | Glass Blaster | c1534c5a-cc30-4ad8-bcc4-a3ad426c6173 |
+| **Other** | Lightning Blaster | c1534c5a-26fd-4606-aa5e-1098426c6173 |
+| **Other** | Blaster - Packing Peanuts | SLZ.BONELAB.Core.Spawnable.BlasterPackingPeanuts |
+| **Other** | Blaster_Paper_Sheets | SLZ.BONELAB.Core.Spawnable.BlasterPaperSheets |
+| **Other** | Sparks Blaster | c1534c5a-989a-4d95-8c71-2495426c6173 |
+| **Other** | Steam Blaster | c1534c5a-6a3f-4824-a66b-5276426c6173 |
+| **Other** | VFX - Blaster - UnlockGacha | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXBlasterUnlockGacha |
+| **Other** | Wooden Blaster | c1534c5a-25a1-4d90-b2f1-31f6426c6173 |
+| **Other** | Blaster - Lightning Negative | SLZ.BONELAB.Content.Spawnable.BlasterLightningNegative |
+| **Other** | Blaster - Void | SLZ.BONELAB.Content.Spawnable.BlasterVoid |
+| **Other** | Rocky | SLZ.BONELAB.Core.VFX.BlasterRocky |
+| **Other** | Shards | SLZ.BONELAB.Core.VFX.BlasterShards |
+| **Other** | Large Splatter | c1534c5a-4a64-4e30-ac16-897944656361 |
+| **Other** | Small Splatter | c1534c5a-06ef-49a4-830a-256244656361 |
+| **Other** | Gameplay Systems | SLZ.BONELAB.Core.Spawnable.GameplaySystems |
+| **Other** | Bone | c1534c5a-345b-4e39-bd4a-fb24496d7061 |
+| **Other** | Cardboard | c1534c5a-ff9f-438e-85df-1095496d7061 |
+| **Other** | Glass | c1534c5a-680e-4bd5-abae-5bb6476c6173 |
+| **Other** | Hydraulic | c1534c5a-71ed-4627-9fb7-bb88496d7061 |
+| **Other** | Liquid | c1534c5a-579e-474e-85d0-de954c697175 |
+| **Other** | Rocky | c1534c5a-6786-46df-934c-6395526f636b |
+| **Other** | Smoker | c1534c5a-c4f1-40d8-9352-2d95536d6f6b |
+| **Other** | Sparks_Metal | SLZ.BONELAB.Core.Spawnable.SparksMetal |
+| **Other** | Hard Surface Sparks | c1534c5a-acf4-423b-b9e8-029548617264 |
+| **Other** | Sparks_Metal_Thin | SLZ.BONELAB.Core.Spawnable.SparksMetalThin |
+| **Other** | Impact - Void | SLZ.BONELAB.Core.Spawnable.ImpactVoid |
+| **Other** | Wooden | c1534c5a-8ffa-43ee-91ae-7895576f6f64 |
+| **Other** | Zapper | c1534c5a-aa7a-4c6e-b16b-10955a617070 |
+| **Other** | Balloon | c1534c5a-f72d-45ed-8bf6-ea9542696742 |
+| **Other** | Fire Ball Projectile | c1534c5a-355a-4734-8103-5ded46697265 |
+| **Other** | Lightning Projectile | c1534c5a-891a-45c1-94c3-b39552696769 |
+| **Other** | Projectile Plasma - SLZ Ballistics Variant | SLZ.BONELAB.CORE.Spawnable.ProjectilePlasmaSLZBallisticsVariant |
+| **Other** | Bullet Projectile | c1534c5a-00d0-44de-ab14-19e850726f6a |
+| **Other** | Projectile - Void Energy | SLZ.BONELAB.Content.Spawnable.ProjectileVoidEnergy |
+| **Other** | Projectile - VoidBall | SLZ.BONELAB.Content.Spawnable.ProjectileVoidBall |
+| **Other** | Projectile Plasma Negative - SLZ Ballistics Variant | SLZ.BONELAB.Content.Spawnable.ProjectilePlasmaNegativeSLZBallisticsVariant |
+| **Other** | Audio Player | c1534c5a-03e2-409b-a089-127541756469 |
+| **Other** | Legacy UI Event System | SLZ.BONELAB.Core.Spawnable.LegacyUIEventSystem |
+| **Other** | Popup Text | c1534c5a-cfdb-4446-a1de-9895506f7075 |
+| **Other** | Rig Manager (Blank) | SLZ.BONELAB.Core.Spawnable.RigManagerBlank |
+| **Other** | Spawn Gun UI | SLZ.BONELAB.Content.Spawnable.SpawnGunUI |
+| **Other** | Attack Decal Object | c1534c5a-df6c-4156-9a6a-b09541747461 |
+| **Other** | Fizzle | c1534c5a-8afb-4be3-89da-1f9546697a7a |
+| **Other** | Flash Flare | c1534c5a-abfa-4f6c-82e5-bd95466c6173 |
+| **Other** | Muzzle Flare Plasma | SLZ.BONELAB.CORE.Spawnable.VFXFlareMuzzlePlasma |
+| **Other** | Muzzle Flare Shotgun | c1534c5a-fdea-402d-a008-a7fb4d757a7a |
+| **Other** | Muzzle Flare Suppressed | c1534c5a-bd6a-4440-9044-fac94d757a7a |
+| **Other** | Muzzle Flare Void | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXFlareMuzzleVoid |
+| **Other** | Muzzle Flare | c1534c5a-93e8-405b-89e2-e39c466c6172 |
+| **Other** | Load Fade Fast | c1534c5a-84f0-4d2b-b4d7-64405646584c |
+| **Other** | Load Fade | c1534c5a-dac0-44a1-b656-6c235646584c |
+| **Other** | VFX - Unblip | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXUnblip |
+| **Other** | Void Spawn | c1534c5a-cc15-4747-89ec-9dad56465856 |
+| **Other** | Impact Energy Zap | SLZ.BONELAB.Core.VFX.ImpactEnergyZap |
+| **Other** | Transform VFX | SLZ.BONELAB.Content.Spawnable.TransformVFX |
+| **Other** | Aura Glow | SLZ.BONELAB.Content.VFX.AuraGlow |
+| **Other** | Location Beam | SLZ.BONELAB.Content.VFX.LocationBeam |
+| **Other** | Switch | SLZ.Backlot.Spawnable.Switch |
+| **Other** | Slider | SLZ.Backlot.Spawnable.Slider |
+| **Other** | Lever | SLZ.Backlot.Spawnable.Lever |
+| **Other** | Button 1.5x | SLZ.Backlot.Spawnable.Button15x |
+| **Other** | Button 1x | SLZ.Backlot.Spawnable.Button1x |
+| **Other** | Button 2x | SLZ.Backlot.Spawnable.Button2x |
+| **Other** | Button 3x | SLZ.Backlot.Spawnable.Button3x |
+| **Other** | Door Airlock Slider 2m | SLZ.Backlot.Spawnable.DoorAirlockSlider2m |
+| **Other** | Escalator 6m | SLZ.Backlot.Spawnable.Escalator6m |
+| **Other** | Autowalk | SLZ.Backlot.Spawnable.Autowalk |
+| **Other** | Lunar Landerr | SLZ.BONELAB.Content.Spawnable.LunarLander |
+
+## Prop Fragments
+| Category | Name | Barcode |
+| :--- | :--- | :--- |
 | **Fragments** | Fragment - Bottle 01 | SLZ.BONELAB.Content.Spawnable.FragmentBottle01 |
 | **Fragments** | Fragment - Bottle 02 | SLZ.BONELAB.Content.Spawnable.FragmentBottle02 |
 | **Fragments** | Fragment - Bottle 03 | SLZ.BONELAB.Content.Spawnable.FragmentBottle03 |
@@ -815,78 +944,3 @@
 | **Fragments** | Fragment - Wood Plank Piece 01 | SLZ.BONELAB.Content.Spawnable.FragmentWoodPlankPiece01 |
 | **Fragments** | Fragment - Wood Plank Piece 02 | SLZ.BONELAB.Content.Spawnable.FragmentWoodPlankPiece02 |
 | **Fragments** | Fragment - Wood Plank Piece 03 | SLZ.BONELAB.Content.Spawnable.FragmentWoodPlankPiece03 |
-| **VFX-Particles** | Anime Collect Blaster | c1534c5a-b658-4b46-abd0-1c47426c6173 |
-| **VFX-Particles** | Anime Smoker Blaster | c1534c5a-f2eb-46a8-8aad-538e426c6173 |
-| **VFX-Particles** | Blood Bag Blaster | c1534c5a-1ea0-4156-920b-f8a8426c6173 |
-| **VFX-Particles** | Bullets Blaster | c1534c5a-cc53-41f1-b76f-a384426c6173 |
-| **VFX-Particles** | Blaster - Confetti Cannon | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.BlasterConfettiCannon |
-| **VFX-Particles** | Confetti Flash Cannon | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.ConfettiPoofCannon |
-| **VFX-Particles** | Confetti Blaster | c1534c5a-03ab-42ef-a0e5-e595426c6173 |
-| **VFX-Particles** | Dust Blaster | c1534c5a-ded9-4a3c-8a79-a16f426c6173 |
-| **VFX-Particles** | Blaster - Fire | SLZ.BONELAB.CORE.Spawnable.BlasterFire |
-| **VFX-Particles** | Glass Blaster | c1534c5a-cc30-4ad8-bcc4-a3ad426c6173 |
-| **VFX-Particles** | Lightning Blaster | c1534c5a-26fd-4606-aa5e-1098426c6173 |
-| **VFX-Particles** | Blaster - Packing Peanuts | SLZ.BONELAB.Core.Spawnable.BlasterPackingPeanuts |
-| **VFX-Particles** | Blaster_Paper_Sheets | SLZ.BONELAB.Core.Spawnable.BlasterPaperSheets |
-| **VFX-Particles** | Sparks Blaster | c1534c5a-989a-4d95-8c71-2495426c6173 |
-| **VFX-Particles** | Steam Blaster | c1534c5a-6a3f-4824-a66b-5276426c6173 |
-| **VFX-Particles** | VFX - Blaster - UnlockGacha | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXBlasterUnlockGacha |
-| **VFX-Particles** | Wooden Blaster | c1534c5a-25a1-4d90-b2f1-31f6426c6173 |
-| **VFX-Particles** | Blaster - Lightning Negative | SLZ.BONELAB.Content.Spawnable.BlasterLightningNegative |
-| **VFX-Particles** | Blaster - Void | SLZ.BONELAB.Content.Spawnable.BlasterVoid |
-| **VFX-Particles** | Rocky | SLZ.BONELAB.Core.VFX.BlasterRocky |
-| **VFX-Particles** | Shards | SLZ.BONELAB.Core.VFX.BlasterShards |
-| **VFX-Particles** | Large Splatter | c1534c5a-4a64-4e30-ac16-897944656361 |
-| **VFX-Particles** | Small Splatter | c1534c5a-06ef-49a4-830a-256244656361 |
-| **VFX-Particles** | Gameplay Systems | SLZ.BONELAB.Core.Spawnable.GameplaySystems |
-| **VFX-Particles** | Bone | c1534c5a-345b-4e39-bd4a-fb24496d7061 |
-| **VFX-Particles** | Cardboard | c1534c5a-ff9f-438e-85df-1095496d7061 |
-| **VFX-Particles** | Glass | c1534c5a-680e-4bd5-abae-5bb6476c6173 |
-| **VFX-Particles** | Hydraulic | c1534c5a-71ed-4627-9fb7-bb88496d7061 |
-| **VFX-Particles** | Liquid | c1534c5a-579e-474e-85d0-de954c697175 |
-| **VFX-Particles** | Rocky | c1534c5a-6786-46df-934c-6395526f636b |
-| **VFX-Particles** | Smoker | c1534c5a-c4f1-40d8-9352-2d95536d6f6b |
-| **VFX-Particles** | Sparks_Metal | SLZ.BONELAB.Core.Spawnable.SparksMetal |
-| **VFX-Particles** | Hard Surface Sparks | c1534c5a-acf4-423b-b9e8-029548617264 |
-| **VFX-Particles** | Sparks_Metal_Thin | SLZ.BONELAB.Core.Spawnable.SparksMetalThin |
-| **VFX-Particles** | Impact - Void | SLZ.BONELAB.Core.Spawnable.ImpactVoid |
-| **VFX-Particles** | Wooden | c1534c5a-8ffa-43ee-91ae-7895576f6f64 |
-| **VFX-Particles** | Zapper | c1534c5a-aa7a-4c6e-b16b-10955a617070 |
-| **VFX-Particles** | Balloon | c1534c5a-f72d-45ed-8bf6-ea9542696742 |
-| **VFX-Particles** | Fire Ball Projectile | c1534c5a-355a-4734-8103-5ded46697265 |
-| **VFX-Particles** | Lightning Projectile | c1534c5a-891a-45c1-94c3-b39552696769 |
-| **VFX-Particles** | Projectile Plasma - SLZ Ballistics Variant | SLZ.BONELAB.CORE.Spawnable.ProjectilePlasmaSLZBallisticsVariant |
-| **VFX-Particles** | Bullet Projectile | c1534c5a-00d0-44de-ab14-19e850726f6a |
-| **VFX-Particles** | Projectile - Void Energy | SLZ.BONELAB.Content.Spawnable.ProjectileVoidEnergy |
-| **VFX-Particles** | Projectile - VoidBall | SLZ.BONELAB.Content.Spawnable.ProjectileVoidBall |
-| **VFX-Particles** | Projectile Plasma Negative - SLZ Ballistics Variant | SLZ.BONELAB.Content.Spawnable.ProjectilePlasmaNegativeSLZBallisticsVariant |
-| **VFX-Particles** | Audio Player | c1534c5a-03e2-409b-a089-127541756469 |
-| **VFX-Particles** | Legacy UI Event System | SLZ.BONELAB.Core.Spawnable.LegacyUIEventSystem |
-| **VFX-Particles** | Popup Text | c1534c5a-cfdb-4446-a1de-9895506f7075 |
-| **VFX-Particles** | Rig Manager (Blank) | SLZ.BONELAB.Core.Spawnable.RigManagerBlank |
-| **VFX-Particles** | Attack Decal Object | c1534c5a-df6c-4156-9a6a-b09541747461 |
-| **VFX-Particles** | Fizzle | c1534c5a-8afb-4be3-89da-1f9546697a7a |
-| **VFX-Particles** | Flash Flare | c1534c5a-abfa-4f6c-82e5-bd95466c6173 |
-| **VFX-Particles** | Muzzle Flare Plasma | SLZ.BONELAB.CORE.Spawnable.VFXFlareMuzzlePlasma |
-| **VFX-Particles** | Muzzle Flare Shotgun | c1534c5a-fdea-402d-a008-a7fb4d757a7a |
-| **VFX-Particles** | Muzzle Flare Suppressed | c1534c5a-bd6a-4440-9044-fac94d757a7a |
-| **VFX-Particles** | Muzzle Flare Void | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXFlareMuzzleVoid |
-| **VFX-Particles** | Muzzle Flare | c1534c5a-93e8-405b-89e2-e39c466c6172 |
-| **VFX-Particles** | Load Fade Fast | c1534c5a-84f0-4d2b-b4d7-64405646584c |
-| **VFX-Particles** | Load Fade | c1534c5a-dac0-44a1-b656-6c235646584c |
-| **VFX-Particles** | VFX - Unblip | fa534c5a83ee4ec6bd641fec424c4142.Spawnable.VFXUnblip |
-| **VFX-Particles** | Void Spawn | c1534c5a-cc15-4747-89ec-9dad56465856 |
-| **VFX-Particles** | Impact Energy Zap | SLZ.BONELAB.Core.VFX.ImpactEnergyZap |
-| **VFX-Particles** | Transform VFX | SLZ.BONELAB.Content.Spawnable.TransformVFX |
-| **VFX-Particles** | Aura Glow | SLZ.BONELAB.Content.VFX.AuraGlow |
-| **VFX-Particles** | Location Beam | SLZ.BONELAB.Content.VFX.LocationBeam |
-| **VFX-Particles** | Switch | SLZ.Backlot.Spawnable.Switch |
-| **VFX-Particles** | Slider | SLZ.Backlot.Spawnable.Slider |
-| **VFX-Particles** | Lever | SLZ.Backlot.Spawnable.Lever |
-| **VFX-Particles** | Button 1.5x | SLZ.Backlot.Spawnable.Button15x |
-| **VFX-Particles** | Button 1x | SLZ.Backlot.Spawnable.Button1x |
-| **VFX-Particles** | Button 2x | SLZ.Backlot.Spawnable.Button2x |
-| **VFX-Particles** | Button 3x | SLZ.Backlot.Spawnable.Button3x |
-| **VFX-Particles** | Door Airlock Slider 2m | SLZ.Backlot.Spawnable.DoorAirlockSlider2m |
-| **VFX-Particles** | Escalator 6m | SLZ.Backlot.Spawnable.Escalator6m |
-| **VFX-Particles** | Autowalk | SLZ.Backlot.Spawnable.Autowalk |
