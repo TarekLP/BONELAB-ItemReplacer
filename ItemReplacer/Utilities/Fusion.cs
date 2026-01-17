@@ -21,28 +21,14 @@ namespace ItemReplacer.Utilities
             }
         }
 
-        public static bool IsHost
-        {
-            get
-            {
-                if (IsConnected) return Internal_IsHost();
-                else return false;
-            }
-        }
-
         internal static bool Internal_IsConnected()
         {
             return LabFusion.Network.NetworkInfo.HasServer;
         }
 
-        internal static bool Internal_IsHost()
-        {
-            return LabFusion.Network.NetworkInfo.IsHost;
-        }
-
         public static void NetworkSpawnSpawnable(string barcode, CrateSpawner spawner, UniTaskCompletionSource<Poolee> source)
         {
-            if (IsHost) Internal_NetworkSpawnSpawnable(barcode, spawner, source);
+            if (IsConnected) Internal_NetworkSpawnSpawnable(barcode, spawner, source);
         }
 
         private static void Internal_NetworkSpawnSpawnable(string barcode, CrateSpawner spawner, UniTaskCompletionSource<Poolee> source)

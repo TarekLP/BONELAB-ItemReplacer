@@ -29,8 +29,11 @@ namespace ItemReplacer
 
         private bool thunderstoreNotif;
 
+        public static Core Instance { get; private set; }
+
         public override void OnInitializeMelon()
         {
+            Instance = this;
             Logger = LoggerInstance;
 
             LoggerInstance.Msg("Loading dependencies");

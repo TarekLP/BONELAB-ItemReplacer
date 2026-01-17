@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 using HarmonyLib;
@@ -23,19 +24,17 @@ namespace ItemReplacer.Patches
         public static int TotalReplacements { get; internal set; } = 0;
         public static int LevelReplacements { get; internal set; } = 0;
 
-        // Item Replacement Logic
         [HarmonyPrefix]
-        [HarmonyPriority(int.MaxValue)]
-        [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
-        public static bool SpawnSpawnableAsyncPrefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
+        [HarmonyPatch(nameof(CrateSpawner.Awake))]
+        public static void Patch(CrateSpawner __instance)
         {
             try
             {
                 // Is the mod enabled or disabled?
-                if (PreferencesManager.Enabled?.Value != true) return true;
+                if (PreferencesManager.Enabled?.Value != true) return;
 
                 // if there is no barcode, there is no replacement.
-                if (__instance?.spawnableCrateReference?.Barcode == null) return true;
+                if (__instance?.spawnableCrateReference?.Barcode == null) return;
 
                 string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
                 string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
@@ -48,65 +47,22 @@ namespace ItemReplacer.Patches
                     if (crateRef?.TryGetCrate(out var crate) != true)
                     {
                         Core.Logger.Error($"Barcode does not exist in-game, the mod may not be installed. Not replacing item. (Barcode: {targetBarcode})");
-                        return true;
+                        return;
                     }
 
                     if (PreferencesManager.IsDebug())
                         Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
-                    if (!Fusion.IsConnected)
-                    {
-                        // fuck this code, the UniTaskCompletionSource does not work correctly (probably fires too late, causing bugs)
-                        SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
-                        ReplacedSuccess();
-                    }
-                    else if (PreferencesManager.FusionSupport?.Value == true)
-                    {
-                        FusionSpawn(__instance, targetBarcode, out __result);
-                    }
-                    return false;
+                    __instance.spawnableCrateReference = crateRef;
+                    __instance._spawnable = new Spawnable() { crateRef = crateRef, policyData = null };
+                    __instance.SetSpawnable();
+
+                    ReplacedSuccess();
                 }
-                return true;
             }
             catch (Exception e)
             {
                 Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
-                return true;
-            }
-        }
-
-        private static void FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
-        {
-            if (Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out __result))
-                SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
-
-            ReplacedSuccess();
-        }
-
-        private static void HandleSpawner(CrateSpawner spawner, Poolee poolee)
-        {
-            var go = poolee?.gameObject;
-            if (go == null)
-                return;
-
-            try
-            {
-                spawner.OnPooleeSpawn(go);
-            }
-            catch (Exception e)
-            {
-                Core.Logger.Error("An unexpected error has occurred while handling CrateSpawner OnPooleeSpawn", e);
-            }
-
-            poolee.OnDespawnDelegate += (Action<GameObject>)spawner.OnPooleeDespawn;
-
-            try
-            {
-                spawner.onSpawnEvent?.Invoke(spawner, go);
-            }
-            catch (Exception e)
-            {
-                Core.Logger.Error("An unexpected error has occurred while invoking CrateSpawner onSpawnEvent", e);
             }
         }
 
@@ -149,27 +105,6 @@ namespace ItemReplacer.Patches
                 return ScribanMatcher.Match(barcode, entry);
             else
                 return barcode == entry.Original;
-        }
-
-        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, Action<Poolee> callback, out UniTask<Poolee> source)
-        {
-            var _source = new UniTaskCompletionSource<Poolee>();
-            source = new UniTask<Poolee>(_source.TryCast<IUniTaskSource<Poolee>>(), default);
-
-            void continuation(Poolee poolee)
-            {
-                if (poolee == null)
-                    return;
-
-                _source.TrySetResult(poolee);
-
-                if (callback != null)
-                    callback.Invoke(poolee);
-            }
-
-            var spawnable = LocalAssetSpawner.CreateSpawnable(barcode);
-            LocalAssetSpawner.Register(spawnable);
-            LocalAssetSpawner.Spawn(spawnable, position, rotation, continuation);
         }
 
         public static string RemoveUnityRichText(this string text)
