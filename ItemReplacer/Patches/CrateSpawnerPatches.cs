@@ -57,15 +57,12 @@ namespace ItemReplacer.Patches
                     if (!Fusion.IsConnected)
                     {
                         // fuck this code, the UniTaskCompletionSource does not work correctly (probably fires too late, causing bugs)
-                        var source = new UniTaskCompletionSource<Poolee>();
-                        __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
-                        SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
+                        SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
                         ReplacedSuccess();
-                        return false;
                     }
                     else if (PreferencesManager.FusionSupport?.Value == true)
                     {
-                        return FusionSpawn(__instance, targetBarcode, out __result);
+                        FusionSpawn(__instance, targetBarcode, out __result);
                     }
                     return false;
                 }
@@ -78,17 +75,39 @@ namespace ItemReplacer.Patches
             }
         }
 
-        private static bool FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
+        private static void FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
         {
             if (Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out __result))
-            {
-                var source = new UniTaskCompletionSource<Poolee>();
-                __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
-                SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
-            }
+                SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
 
             ReplacedSuccess();
-            return false;
+        }
+
+        private static void HandleSpawner(CrateSpawner spawner, Poolee poolee)
+        {
+            var go = poolee?.gameObject;
+            if (go == null)
+                return;
+
+            try
+            {
+                spawner.OnPooleeSpawn(go);
+            }
+            catch (Exception e)
+            {
+                Core.Logger.Error("An unexpected error has occurred while handling CrateSpawner OnPooleeSpawn", e);
+            }
+
+            poolee.OnDespawnDelegate += (Action<GameObject>)spawner.OnPooleeDespawn;
+
+            try
+            {
+                spawner.onSpawnEvent?.Invoke(spawner, go);
+            }
+            catch (Exception e)
+            {
+                Core.Logger.Error("An unexpected error has occurred while invoking CrateSpawner onSpawnEvent", e);
+            }
         }
 
         private static void ReplacedSuccess()
@@ -132,33 +151,26 @@ namespace ItemReplacer.Patches
                 return barcode == entry.Original;
         }
 
-        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
+        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, Action<Poolee> callback, out UniTask<Poolee> source)
         {
-            var scale = CreateNull(Vector3.zero);
-            var groupId = CreateNull(0);
-            var spawnable = CreateSpawnable(barcode);
+            var _source = new UniTaskCompletionSource<Poolee>();
+            source = new UniTask<Poolee>(_source.TryCast<IUniTaskSource<Poolee>>(), default);
 
-            // Note to future self: you have to register it, it doesnt work otherwise.
-            AssetSpawner.Register(spawnable);
-
-            var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
-            var awaiter = task.GetAwaiter();
-
-            void continuation()
+            void continuation(Poolee poolee)
             {
-                var poolee = awaiter.GetResult();
                 if (poolee == null)
                     return;
 
-                source.TrySetResult(poolee);
+                _source.TrySetResult(poolee);
+
+                if (callback != null)
+                    callback.Invoke(poolee);
             }
-            awaiter.OnCompleted(continuation);
+
+            var spawnable = LocalAssetSpawner.CreateSpawnable(barcode);
+            LocalAssetSpawner.Register(spawnable);
+            LocalAssetSpawner.Spawn(spawnable, position, rotation, continuation);
         }
-
-        private static Il2CppSystem.Nullable<T> CreateNull<T>(T value) where T : new()
-            => new(value) { hasValue = false };
-
-        public static Spawnable CreateSpawnable(string barcode) => new() { crateRef = new(barcode), policyData = null };
 
         public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);
