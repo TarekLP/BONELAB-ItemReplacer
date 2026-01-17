@@ -9,6 +9,30 @@ namespace ItemReplacer.Managers
 {
     internal static class DependencyManager
     {
+        internal static void LoadDependencies(bool log = true)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+
+            if (assembly == null)
+            {
+                Log("Executing assembly was somehow not found, cannot not load dependencies", Core.Logger.Error, log);
+                return;
+            }
+
+            var assemblyInfo = assembly.GetName();
+
+            if (assemblyInfo == null)
+            {
+                Log("Assembly Info was not found, cannot not load dependencies", Core.Logger.Error, log);
+                return;
+            }
+
+            var names = assembly.GetManifestResourceNames();
+
+            var dependencies = names?.Where(x => x.StartsWith($"{assemblyInfo.Name}.Dependencies.") && x.EndsWith(".dll")).ToList();
+            dependencies.ForEach(x => TryLoadDependency(x.Replace($"{assemblyInfo.Name}.Dependencies.", string.Empty).Replace(".dll", ""), log));
+        }
+
         internal static bool TryLoadDependency(string name, bool log = true)
         {
             try

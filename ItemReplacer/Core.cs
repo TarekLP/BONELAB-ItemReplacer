@@ -34,7 +34,7 @@ namespace ItemReplacer
             Logger = LoggerInstance;
 
             LoggerInstance.Msg("Loading dependencies");
-            DependencyManager.TryLoadDependency("Scriban");
+            DependencyManager.LoadDependencies();
 
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();
