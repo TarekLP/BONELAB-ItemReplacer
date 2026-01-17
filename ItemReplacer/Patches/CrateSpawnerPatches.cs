@@ -24,6 +24,7 @@ namespace ItemReplacer.Patches
         public static int TotalReplacements { get; internal set; } = 0;
         public static int LevelReplacements { get; internal set; } = 0;
 
+        // This seems to run 2-3 times instead of once for some reason
         [HarmonyPrefix]
         [HarmonyPatch(nameof(CrateSpawner.Awake))]
         public static void Patch(CrateSpawner __instance)
