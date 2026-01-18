@@ -8,8 +8,36 @@
       "type": "string",
       "description": "The name of the replacer, this will appear in the BoneMenu"
     },
+    "description": {
+      "type": "string",
+      "description": "The description of the replacer, this will appear in the BoneMenu"
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Holds the mod.io dependencies required for the replacer to work correctly",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title that will be shown in the BoneMenu when the mod will be missing"
+          },
+          "barcode": {
+            "type": "string",
+            "description": "The barcode of the mod (pallet). This is used to actually check if it is present in the game"
+          },
+          "modId": {
+            "type": "number",
+            "description": "The ID of the mod. This is used when installing the missing dependency"
+          }
+        },
+        "required": ["title", "barcode", "modId"]
+      }
+    },
     "color": {
       "type": "string",
+      "format": "color",
+      "pattern": "#[a-fA-F0-9]{6}",
       "description": "The color of the button in BoneMenu that allows for managing the replacer"
     },
     "id": {
@@ -30,6 +58,10 @@
             "type": "string",
             "description": "The name of the category which will be shown in the BoneMenu"
           },
+          "description": {
+            "type": "string",
+            "description": "The description of the category which will be shown in the BoneMenu"
+          },
           "enabled": {
             "type": "boolean",
             "description": "If true, the mod will check for the replacement and replace if found, otherwise the category will be ignored"
@@ -41,38 +73,38 @@
               "type": "object",
               "properties": {
                 "original": {
-                  "description": "The original barcode, here you can also use RegEx, but you have to set the 'isRegEx' property to true",
+                  "description": "The original barcode, this allows also for using RegEx and the Scriban templating engine, but you have to set the type property",
                   "type": "string"
                 },
-                "replaceWith": {
+                "replacement": {
                   "description": "The replacement for the original spawnable",
                   "type": "string"
                 },
-                "isRegEx": {
-                  "description": "If true, the 'original' property will be treated like RegEx, otherwise it will check if the original is simply equal to the item being spawned",
-                  "type": "boolean"
+                "type": {
+                  "description": "The type of matching, this allows for: compare - the simplest one, checks if original property is the same as the one being spawned, nothing fancy. regex allows for using RegEx in the original property for matching. scriban allows using the Scriban templating engine for matching.",
+                  "type": "string",
+                  "default": "compare",
+                  "enum": ["compare", "regex", "scriban"]
                 }
               },
-              "required": [
-                "original",
-                "replaceWith"
-              ]
+              "additionalProperties": false,
+              "required": ["original", "replacement"],
+              "if": {
+                "properties": {
+                  "type": { "const": "regex" }
+                }
+              },
+              "then": {
+                "properties": {
+                  "original": { "format": "regex" }
+                }
+              }
             }
           }
         },
-        "required": [
-          "name",
-          "enabled",
-          "entries"
-        ]
+        "required": ["name", "enabled", "entries"]
       }
     }
   },
-  "required": [
-    "name",
-    "color",
-    "id",
-    "enabled",
-    "categories"
-  ]
+  "required": ["name", "color", "id", "enabled", "categories"]
 }

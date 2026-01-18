@@ -4,39 +4,32 @@ using System.Text.RegularExpressions;
 
 using HarmonyLib;
 
-using UnityEngine;
-
 using Il2CppSLZ.Marrow.Data;
-using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
 
-using Il2CppCysharp.Threading.Tasks;
-
 namespace ItemReplacer.Patches
 {
-
     [HarmonyPatch(typeof(CrateSpawner))]
     internal static class CrateSpawnerPatches
     {
         public static int TotalReplacements { get; internal set; } = 0;
         public static int LevelReplacements { get; internal set; } = 0;
 
-        // Item Replacement Logic
+        // This seems to run 2-3 times instead of once for some reason
         [HarmonyPrefix]
-        [HarmonyPriority(int.MaxValue)]
-        [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
-        public static bool Prefix(CrateSpawner __instance, ref UniTask<Poolee> __result)
+        [HarmonyPatch(nameof(CrateSpawner.Awake))]
+        public static void Patch(CrateSpawner __instance)
         {
             try
             {
                 // Is the mod enabled or disabled?
-                if (PreferencesManager.Enabled?.Value != true) return true;
+                if (PreferencesManager.Enabled?.Value != true) return;
 
                 // if there is no barcode, there is no replacement.
-                if (__instance?.spawnableCrateReference?.Barcode == null) return true;
+                if (__instance?.spawnableCrateReference?.Barcode == null) return;
 
                 string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
                 string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
@@ -49,38 +42,22 @@ namespace ItemReplacer.Patches
                     if (crateRef?.TryGetCrate(out var crate) != true)
                     {
                         Core.Logger.Error($"Barcode does not exist in-game, the mod may not be installed. Not replacing item. (Barcode: {targetBarcode})");
-                        return true;
+                        return;
                     }
 
                     if (PreferencesManager.IsDebug())
-                        Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode})");
+                        Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
-                    if (!Fusion.IsConnected)
-                    {
-                        var source = new UniTaskCompletionSource<Poolee>();
-                        __result = new UniTask<Poolee>(source.TryCast<IUniTaskSource<Poolee>>(), default);
-                        SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, source);
-                        ReplacedSuccess();
-                        return false;
-                    }
-                    else if (PreferencesManager.FusionSupport?.Value == true)
-                    {
-                        Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out UniTask<Poolee> res);
-                        __result = res ?? new UniTask<Poolee>(null);
-                        ReplacedSuccess();
-                        return false;
+                    __instance.spawnableCrateReference = crateRef;
+                    __instance._spawnable = new Spawnable() { crateRef = crateRef, policyData = null };
+                    __instance.SetSpawnable();
 
-                    }
-                    return false;
-
+                    ReplacedSuccess();
                 }
-                return true;
-
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Core.Logger.Error("An unexpected error has occurred in the CrateSpawner prefix", e);
-                return true;
             }
         }
 
@@ -103,55 +80,29 @@ namespace ItemReplacer.Patches
                     if (category?.Enabled != true)
                         continue;
 
-                    var replacement = category?.Entries?.FirstOrDefault(e => e.IsRegEx ? Regex.IsMatch(barcode, e.Original) : barcode == e.Original);
+                    var replacement = category?.Entries?.FirstOrDefault(e => Match(barcode, e));
                     if (replacement != null)
-                        return replacement.ReplaceWith;
+                    {
+                        if (string.IsNullOrWhiteSpace(replacement.Replacement))
+                            Core.Logger.Warning($"Replacement in category '{category.Name}' of config '{config.ID}' has no replacement specified. This might be caused by an outdated config.");
+                        return replacement.Replacement;
+                    }
                 }
             }
             return null;
         }
 
-        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, UniTaskCompletionSource<Poolee> source)
+        private static bool Match(string barcode, ReplacerEntry entry)
         {
-            var scale = CreateNull(Vector3.zero);
-            var groupId = CreateNull(0);
-            var spawnable = new Spawnable()
-            {
-                crateRef = new SpawnableCrateReference(barcode),
-                policyData = null
-            };
-
-            // Note to future self: you have to register it, it doesnt work otherwise.
-            AssetSpawner.Register(spawnable);
-
-            var task = AssetSpawner.SpawnAsync(spawnable, position, rotation, scale, null, false, groupId, null, null);
-            var awaiter = task.GetAwaiter();
-            awaiter.OnCompleted(() =>
-            {
-                try
-                {
-                    var poolee = awaiter.GetResult();
-                    if (poolee == null)
-                    {
-                        source.TrySetResult(null);
-                        return;
-                    }
-
-                    source.TrySetResult(poolee);
-                }
-                catch (Exception e)
-                {
-                    Core.Logger.Error("Error spawning replaced item", e);
-                    source.TrySetResult(null);
-                }
-            });
+            if (entry.MatchType == MatchType.RegEx)
+                return Regex.IsMatch(barcode, entry.Original);
+            else if (entry.MatchType == MatchType.Scriban)
+                return ScribanMatcher.Match(barcode, entry);
+            else
+                return barcode == entry.Original;
         }
-
-        private static Il2CppSystem.Nullable<T> CreateNull<T>(T value) where T : new()
-            => new(value) { hasValue = false };
 
         public static string RemoveUnityRichText(this string text)
             => Regex.Replace(text, "<.*?>", string.Empty);
-
     }
 }
