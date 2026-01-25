@@ -160,7 +160,12 @@ namespace ItemReplacer.Utilities
 
         public T SendRequest<T>(string url)
         {
-            var client = new HttpClient();
+            var handler = new HttpClientHandler()
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
+            var client = new HttpClient(handler);
             client.DefaultRequestHeaders.Add("User-Agent", this.UserAgent);
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             var request = client.GetAsync(url);
@@ -253,7 +258,6 @@ namespace ItemReplacer.Utilities
             details = GetDetails(response);
             return !string.IsNullOrWhiteSpace(details);
         }
-
 
         private static string GetDetails(HttpResponseMessage response)
         {
@@ -359,7 +363,6 @@ namespace ItemReplacer.Utilities
         public string Name { get; internal set; }
 
         [JsonProperty("version_number")]
-
         public string Version
         { get { return SemanticVersion.ToString(); } internal set { SemanticVersion = Semver.SemVersion.Parse(value); } }
 
@@ -379,7 +382,6 @@ namespace ItemReplacer.Utilities
         public List<string> Dependencies { get; internal set; }
 
         [JsonProperty("download_url")]
-
         public string DownloadURL { get; internal set; }
 
         [JsonProperty("date_created")]

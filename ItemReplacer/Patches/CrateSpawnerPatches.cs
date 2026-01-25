@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 
 using HarmonyLib;
 
-using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Warehouse;
 
 using ItemReplacer.Managers;
@@ -49,8 +48,6 @@ namespace ItemReplacer.Patches
                         Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
                     __instance.spawnableCrateReference = crateRef;
-                    __instance._spawnable = new Spawnable() { crateRef = crateRef, policyData = null };
-                    __instance.SetSpawnable();
 
                     ReplacedSuccess();
                 }
