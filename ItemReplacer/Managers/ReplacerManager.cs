@@ -553,7 +553,7 @@ namespace ItemReplacer.Managers
         internal void Update(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
-            if (!File.Exists(path)) throw new FileNotFoundException($"Save file at '{path}' could be found");
+            if (!File.Exists(path)) throw new FileNotFoundException($"Config file at '{path}' could be found");
             var text = ReplacerManager.ReadAllTextUsedFile(path);
             if (string.IsNullOrWhiteSpace(text) || !ReplacerManager.IsJSON(text))
             {
@@ -569,8 +569,8 @@ namespace ItemReplacer.Managers
                 }
                 else
                 {
-                    Core.Logger.Error($"A save file at '{path}' was changed and the content are no longer suitable for loading as a save. This means that the save at runtime will not be overwritten by new content");
-                    throw new InvalidDataException($"A save file at '{path}' was changed and the content are no longer suitable for loading as a save. This means that the save at runtime will not be overwritten by new content");
+                    Core.Logger.Error($"A config file at '{path}' was changed and the content are no longer suitable for loading as a replacer. This means that the replacer at runtime will not be overwritten by new content");
+                    throw new InvalidDataException($"A cibfug file at '{path}' was changed and the content are no longer suitable for loading as a replacer. This means that the replacer at runtime will not be overwritten by new content");
                 }
             }
         }
