@@ -5,7 +5,7 @@
 
 # Introduction
 
-Item Replacer is a code mod that aims to allow players to easily (somewhat at least) create replacer for in-game items, such as replacing everything with a Miku plushie if u want i guess?
+Item Replacer is a code mod that aims to allow players to easily (somewhat at least) create replacements for in-game items, such as replacing everything with a Miku plushie if u want i guess?
 
 This mod was created to allow for easier creation of replacers for base game items to be replaced by modded ones, while also properly syncing the items with other players in LabFusion.
 
