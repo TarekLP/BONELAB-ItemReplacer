@@ -38,7 +38,6 @@ namespace ItemReplacer
             Logger = LoggerInstance;
 
             LoggerInstance.Msg("Loading dependencies");
-            DependencyManager.LoadDependencies();
 
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();

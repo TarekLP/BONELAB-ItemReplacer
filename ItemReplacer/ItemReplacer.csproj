@@ -18,8 +18,19 @@
 		<None Remove="Dependencies\*.dll" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Remove="Dependencies\Scriban.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Dependencies\Scriban.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="ECHO Copying $(TargetName).dll to Mods folder&#xD;&#xA; COPY &quot;$(TargetPath)&quot; &quot;$(BONELAB_DIR)\Mods&quot;" />
+		<Exec Command="ECHO Copying Scriban.dll to UserLibs folder&#xD;&#xA; COPY &quot;Dependencies\Scriban.dll&quot; &quot;$(BONELAB_DIR)\UserLibs&quot;" />
 	</Target>
 
 </Project>
