@@ -34,7 +34,8 @@ namespace ItemReplacer.Utilities
 
         internal static void Internal_Setup()
         {
-            Core.FindMelon("LabFusion", "Lakatrazz").HarmonyInstance.Unpatch(typeof(CrateSpawner).GetMethod(nameof(CrateSpawner.SpawnSpawnableAsync)), HarmonyLib.HarmonyPatchType.Prefix);
+            var melon = Core.FindMelon("LabFusion", "Lakatrazz");
+            melon.HarmonyInstance.Unpatch(typeof(CrateSpawner).GetMethod(nameof(CrateSpawner.SpawnSpawnableAsync)), HarmonyLib.HarmonyPatchType.Prefix, $"{melon.MelonAssembly.Assembly.FullName}:{melon.Info.Name}");
         }
 
         internal static bool Internal_IsConnected()

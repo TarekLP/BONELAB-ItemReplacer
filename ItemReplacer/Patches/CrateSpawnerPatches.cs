@@ -16,8 +16,6 @@ using LabFusion.Marrow.Pool;
 
 using UnityEngine;
 
-using static MelonLoader.MelonLogger;
-
 namespace ItemReplacer.Patches
 {
     [HarmonyPatch(typeof(CrateSpawner))]
@@ -32,6 +30,7 @@ namespace ItemReplacer.Patches
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
         public static bool SpawnSpawnableAsyncPrefix(CrateSpawner __instance, bool isHidden, ref UniTask<Poolee> __result)
         {
+            Core.Logger.Msg("hi");
             try
             {
                 if (ReplaceItem(__instance, ref __result))
