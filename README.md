@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%">
-  <h1>BONELAB - Item Replacer</h1>
+  <img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%">
+  <h1 align="center">BONELAB - Item Replacer</h1>
 </div>
 
 # Introduction
