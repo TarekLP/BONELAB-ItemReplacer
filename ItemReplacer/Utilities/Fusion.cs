@@ -6,6 +6,8 @@ using Il2CppSLZ.Marrow.Warehouse;
 
 using Il2CppCysharp.Threading.Tasks;
 
+using BoneLib.BoneMenu;
+
 namespace ItemReplacer.Utilities
 {
     internal static class Fusion
@@ -154,17 +156,18 @@ namespace ItemReplacer.Utilities
             return LabFusion.Marrow.CrateFilterer.HasTags(spawnable.crateRef.Crate, LabFusion.Marrow.FusionTags.SingleplayerOnly);
         }
 
-        public static void RequestInstall(int modId, Action<ModResult> callback)
+        public static void RequestInstall(int modId, Action<ModResult> callback, FunctionElement element = null)
         {
-            if (HasFusion) Internal_RequestInstall(modId, callback);
+            if (HasFusion) Internal_RequestInstall(modId, callback, element);
         }
 
-        private static void Internal_RequestInstall(int modId, Action<ModResult> callback)
+        private static void Internal_RequestInstall(int modId, Action<ModResult> callback, FunctionElement element = null)
         {
             LabFusion.Downloading.ModIO.ModIODownloader.EnqueueDownload(new()
             {
                 ModFile = new(modId),
                 Temporary = false,
+                Reporter = element != null ? new MenuReporter(element) : null,
                 Callback = (c) => callback?.Invoke((ModResult)c.Result)
             });
         }
@@ -175,6 +178,16 @@ namespace ItemReplacer.Utilities
             FAILED,
             SUCCEEDED,
             CANCELED
+        }
+    }
+
+    internal class MenuReporter(FunctionElement elem) : IProgress<float>
+    {
+        public string Name { get; set; } = elem.ElementName;
+
+        public void Report(float value)
+        {
+            elem.ElementName = $"{Name} [{Math.Round(value * 100f, 2)}%]";
         }
     }
 }

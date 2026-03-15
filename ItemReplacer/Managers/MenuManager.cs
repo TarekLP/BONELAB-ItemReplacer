@@ -96,9 +96,9 @@ namespace ItemReplacer.Managers
                 missing.ForEach(x =>
                 {
                     FunctionElement elem = null;
-                    elem = page.CreateFunction($"- {(!string.IsNullOrWhiteSpace(x.Title) ? x.Title : x.Barcode)}", Color.red, () =>
+                    elem = page.CreateFunction($"{(!string.IsNullOrWhiteSpace(x.Title) ? x.Title : x.Barcode)}", Color.red, () =>
                     {
-                        InstallMissing(x, () =>
+                        InstallMissing(x, elem, () =>
                         {
                             page.Remove(elem);
                             missing.Remove(x);
@@ -138,7 +138,7 @@ namespace ItemReplacer.Managers
             return title;
         }
 
-        internal static void InstallMissing(ReplacerDependency dependency, Action success)
+        internal static void InstallMissing(ReplacerDependency dependency, FunctionElement element, Action success)
         {
             if (Fusion.HasFusion)
             {
@@ -154,7 +154,7 @@ namespace ItemReplacer.Managers
                     {
                         Notify("Failure", "Failed to install missing dependency, check console for more information", 4.5f, NotificationType.Error);
                     }
-                });
+                }, element);
             }
         }
 

@@ -5,6 +5,7 @@ using BoneLib;
 using ItemReplacer.Patches;
 using ItemReplacer.Managers;
 using ItemReplacer.Utilities;
+
 using Il2CppSLZ.Marrow.Warehouse;
 
 namespace ItemReplacer
@@ -41,6 +42,8 @@ namespace ItemReplacer
 
             LoggerInstance.Msg("Setting up preferences");
             PreferencesManager.Setup();
+
+            Fusion.Setup();
 
             LoggerInstance.Msg("Checking for updates");
 
