@@ -1,14 +1,20 @@
 ﻿using MelonLoader;
+
 using ItemReplacer;
+
 using System.Reflection;
 
 #region MelonLoader
+
 [assembly: MelonInfo(typeof(Core), ModInfo.Name, ModInfo.Version, ModInfo.Author, ModInfo.DownloadLink)]
 [assembly: MelonColor(0, 153, 0, 204)]
+[assembly: MelonPriority(1000)]
 [assembly: MelonGame("Stress Level Zero", "BONELAB")]
-#endregion
+
+#endregion MelonLoader
 
 #region Assembly Info
+
 [assembly: AssemblyTitle(ModInfo.Name)]
 [assembly: AssemblyDescription(ModInfo.Description)]
 [assembly: AssemblyConfiguration("")]
@@ -16,10 +22,13 @@ using System.Reflection;
 [assembly: AssemblyProduct(ModInfo.Name)]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-#endregion
+
+#endregion Assembly Info
 
 #region Assembly Version
+
 [assembly: AssemblyVersion(ModInfo.Version)]
 [assembly: AssemblyFileVersion(ModInfo.Version)]
 [assembly: AssemblyInformationalVersion(ModInfo.Version)]
-#endregion
+
+#endregion Assembly Version

@@ -21,6 +21,20 @@ namespace ItemReplacer.Utilities
             }
         }
 
+        internal static void Setup()
+        {
+            if (!HasFusion)
+                return;
+
+            Core.Logger.Msg("Removing LabFusion Patch...");
+            Internal_Setup();
+        }
+
+        internal static void Internal_Setup()
+        {
+            Core.FindMelon("LabFusion", "Lakatrazz").HarmonyInstance.Unpatch(typeof(CrateSpawner).GetMethod(nameof(CrateSpawner.SpawnSpawnableAsync)), HarmonyLib.HarmonyPatchType.Prefix);
+        }
+
         internal static bool Internal_IsConnected()
         {
             return LabFusion.Network.NetworkInfo.HasServer;
