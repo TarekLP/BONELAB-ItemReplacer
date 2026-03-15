@@ -139,7 +139,7 @@ namespace ItemReplacer.Patches
             MenuManager.UpdateDebugCounts();
         }
 
-        private static string GetReplacement(string barcode)
+        public static string GetReplacement(string barcode)
         {
             foreach (var config in ReplacerManager.Configs)
             {
