@@ -88,8 +88,8 @@ namespace ItemReplacer.Managers
             if (!string.IsNullOrWhiteSpace(config.FilePath) && File.Exists(config.FilePath))
                 page.CreateFunction($"File: {Path.GetFileName(config.FilePath)}", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
-            var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode))).ToList();
-            if (missing.Any())
+            var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))?.ToList();
+            if (missing?.Any() == true)
             {
                 page.Name = $"{config.Name} (!)";
                 var title = CreateDefaultReplacerElems(page, config, missing.Count);
