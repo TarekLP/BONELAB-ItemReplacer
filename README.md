@@ -1,8 +1,7 @@
 <div align="center">
-  <img src="Utilities/img/ItemReplacerLogo.png" alt="Item Replacer Logo" width="10%">
+  <img src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%">
   <h1>BONELAB - Item Replacer</h1>
 </div>
-
 
 # Introduction
 The Item Replacer is a code mod designed to replace certain Items with user specified Replacements (using JSON files).
