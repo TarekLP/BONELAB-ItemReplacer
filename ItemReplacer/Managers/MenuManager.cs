@@ -82,6 +82,7 @@ namespace ItemReplacer.Managers
                 Menu.OpenParentPage();
         }
 
+        // TODO: make it possible to at least create simple replacers from the menu.
         internal static void CreateReplacerPage(Page page, ReplacerConfig config)
         {
             page.RemoveAll();
