@@ -18,6 +18,7 @@ using ItemReplacer.Patches;
 using ItemReplacer.Utilities;
 
 using Il2CppSLZ.Marrow.Warehouse;
+using Il2CppSLZ.Marrow.Interaction;
 
 namespace ItemReplacer.Managers
 {
@@ -35,6 +36,10 @@ namespace ItemReplacer.Managers
         internal static FunctionElement LevelReplacedElement { get; set; }
 
         private static Dictionary<string, Page> ReplacerPages { get; } = [];
+
+        public static bool EditorMode { get; set; }
+
+        private static string ReplacerName { get; set; }
 
         public static void Setup()
         {
@@ -56,6 +61,28 @@ namespace ItemReplacer.Managers
                 return;
 
             ReplacersPage.RemoveAll();
+            ReplacersPage.CreateBool("Editor Mode", Color.cyan, EditorMode, (v) =>
+            {
+                EditorMode = v;
+                SetupReplacers();
+            });
+            if (EditorMode)
+            {
+                ReplacersPage.CreateString("Name", Color.white, ReplacerName, (v) => ReplacerName = v);
+                ReplacersPage.CreateFunction("Create New Replacer", Color.green, () =>
+                {
+                    string id = ReplacerName.ToLower().Trim().Replace(' ', '_');
+                    var config = new ReplacerConfig()
+                    {
+                        ID = id,
+                        Name = ReplacerName,
+                        Color = "#FFFFFF",
+                        Enabled = true,
+                        Categories = []
+                    };
+                    ReplacerManager.Register(config);
+                });
+            }
 
             foreach (var config in ReplacerManager.Configs)
             {
@@ -89,6 +116,9 @@ namespace ItemReplacer.Managers
             if (!string.IsNullOrWhiteSpace(config.FilePath) && File.Exists(config.FilePath))
                 page.CreateFunction($"File: {Path.GetFileName(config.FilePath)}", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
+            if (EditorMode)
+                page.CreateFunction("Delete Replacer", Color.red, () => DeleteDialog(config));
+
             var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))?.ToList();
             if (missing?.Any() == true)
             {
@@ -121,12 +151,50 @@ namespace ItemReplacer.Managers
                 });
 
                 page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+                if (EditorMode)
+                {
+                    string category = string.Empty;
+                    ReplacersPage.CreateString("Name", Color.white, category, (v) => category = v);
+                    ReplacersPage.CreateFunction("Create New Category", Color.green, () =>
+                    {
+                        config.Categories.Add(new ReplacerCategory(category, string.Empty, []));
+                        config.TrySaveToFile(false);
+                        SetupReplacers();
+                    });
+                    page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+                }
 
                 config.Categories.ForEach(x => x.CreateCategory(config, page));
             }
 
             if (Menu.CurrentPage == page)
                 CorrectPage(page);
+        }
+
+        internal static void DeleteDialog(ReplacerConfig config)
+        {
+            Menu.DisplayDialog(new DialogData()
+            {
+                Title = "Are you sure?",
+                Message = $"Are you sure you want to delete the replacer '{config.Name}'? This action cannot be undone.",
+                Confirm = () => ReplacerManager.Unregister(config.ID),
+                Deny = () => Core.Logger.Msg("Deletion cancelled")
+            });
+        }
+
+        internal static SpawnableCrate GetSpawnableFromHand(Handedness handness)
+        {
+            var hand = handness switch
+            {
+                Handedness.LEFT => Player.LeftHand,
+                Handedness.RIGHT => Player.RightHand,
+                _ => null
+            };
+
+            if (hand == null)
+                return null;
+
+            return hand?.AttachedReceiver?.Host?.GetGrip()?._marrowEntity?._poolee?.SpawnableCrate;
         }
 
         internal static FunctionElement CreateDefaultReplacerElems(Page page, ReplacerConfig config, int missing)
