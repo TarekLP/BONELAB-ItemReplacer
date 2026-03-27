@@ -24,7 +24,6 @@ namespace ItemReplacer.Patches
         public static int TotalReplacements { get; internal set; } = 0;
         public static int LevelReplacements { get; internal set; } = 0;
 
-        // Item Replacement Logic
         [HarmonyPrefix]
         [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
@@ -46,17 +45,14 @@ namespace ItemReplacer.Patches
 
         private static bool ReplaceItem(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
-            // Is the mod enabled or disabled?
             if (PreferencesManager.Enabled?.Value != true) return true;
 
-            // if there is no barcode, there is no replacement.
             if (__instance?.spawnableCrateReference?.Barcode == null) return true;
 
             string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
             string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
             string targetBarcode = GetReplacement(currentBarcode);
 
-            // While the barcode isnt null, there is a replacement.
             if (targetBarcode != null)
             {
                 var crateRef = new SpawnableCrateReference(targetBarcode);
@@ -71,7 +67,6 @@ namespace ItemReplacer.Patches
 
                 if (!Fusion.IsConnected)
                 {
-                    // fuck this code, the UniTaskCompletionSource does not work correctly (probably fires too late, causing bugs)
                     SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
                     ReplacedSuccess();
                 }
