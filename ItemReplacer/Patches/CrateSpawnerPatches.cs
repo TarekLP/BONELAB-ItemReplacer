@@ -168,6 +168,9 @@ namespace ItemReplacer.Patches
 
         private static bool Match(string barcode, ReplacerEntry entry)
         {
+            if (string.IsNullOrWhiteSpace(entry?.Original) || string.IsNullOrWhiteSpace(entry?.Replacement))
+                return false;
+
             if (entry.MatchType == MatchType.RegEx)
                 return Regex.IsMatch(barcode, entry.Original);
             else if (entry.MatchType == MatchType.Scriban)
