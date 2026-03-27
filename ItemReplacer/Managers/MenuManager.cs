@@ -9,7 +9,6 @@ using BoneLib.BoneMenu;
 using BoneLib.BoneMenu.UI;
 using BoneLib.Notifications;
 
-using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Interaction;
 using Il2CppSLZ.Marrow.Warehouse;
 
@@ -73,23 +72,16 @@ namespace ItemReplacer.Managers
                 EditorMode = v;
                 SetupReplacers();
             });
+            ReplacersPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
             if (EditorMode)
             {
                 ReplacersPage.CreateString("Name", Color.white, ReplacerName, (v) => ReplacerName = v);
-                ReplacersPage.CreateFunction("Create New Replacer", Color.green, () =>
-                {
-                    string id = ReplacerName.ToLower().Trim().Replace(' ', '_');
-                    var config = new ReplacerConfig()
-                    {
-                        ID = id,
-                        Name = ReplacerName,
-                        Color = "#FFFFFF",
-                        Enabled = true,
-                        Categories = []
-                    };
-                    ReplacerManager.Register(config);
-                });
+                ReplacersPage.CreateFunction("Create New Replacer", Color.green, CreateReplacer);
+                ReplacersPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
             }
+
+            bool categoryUpdated = false;
+            bool entryUpdated = false;
 
             foreach (var config in ReplacerManager.Configs)
             {
@@ -98,10 +90,9 @@ namespace ItemReplacer.Managers
                     Core.Logger.Error("Replacer is null, cannot generate element");
                     continue;
                 }
+
                 if (string.IsNullOrWhiteSpace(config.ID))
-                {
                     Core.Logger.Error("ID is null or empty, cannot generate element");
-                }
 
                 Page page = PageFromConfig(config);
 
@@ -109,15 +100,51 @@ namespace ItemReplacer.Managers
                 if (!string.IsNullOrWhiteSpace(config.Description))
                     link.SetTooltip(config.Description);
 
-                CreateReplacerPage(page, config);
+                var (category, entry) = CreateReplacerPage(page, config);
+                if (entry) entryUpdated = true;
+                if (category) categoryUpdated = true;
             }
 
-            if (Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
-                Menu.OpenParentPage();
+            FixMenu(categoryUpdated, entryUpdated);
         }
 
-        // TODO: make it possible to at least create simple replacers from the menu.
-        internal static void CreateReplacerPage(Page page, ReplacerConfig config)
+        internal static void FixMenu(bool category, bool entry)
+        {
+            if (Menu.CurrentPage == CategoryPage && !category)
+                Menu.OpenPage(ReplacersPage);
+            else if (Menu.CurrentPage == EntryPage && !entry)
+                Menu.OpenPage(category ? CategoryPage : ReplacersPage);
+
+            if (Menu.CurrentPage != CategoryPage && Menu.CurrentPage != EntryPage &&
+                Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
+            {
+                Menu.OpenParentPage();
+            }
+        }
+
+        internal static void CreateReplacer()
+        {
+            try
+            {
+                string id = ReplacerName.ToLower().Trim().Replace(' ', '_');
+                var config = new ReplacerConfig()
+                {
+                    ID = id,
+                    Name = ReplacerName,
+                    Color = "#FFFFFF",
+                    Enabled = true,
+                    Categories = []
+                };
+                ReplacerManager.Register(config);
+            }
+            catch (Exception ex)
+            {
+                Core.Logger.Error("Failed to create replacer using the menu", ex);
+                Notify("Error", "Failed to create replacer, check console for more information", 4.5f, NotificationType.Error);
+            }
+        }
+
+        internal static (bool category, bool entry) CreateReplacerPage(Page page, ReplacerConfig config)
         {
             page.RemoveAll();
             if (!string.IsNullOrWhiteSpace(config.FilePath) && File.Exists(config.FilePath))
@@ -127,28 +154,12 @@ namespace ItemReplacer.Managers
                 page.CreateFunction("Delete Replacer", Color.red, () => ConfigDeleteDialog(config));
 
             bool categoryUpdated = false;
+            bool entryUpdated = false;
 
             var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))?.ToList();
             if (missing?.Any() == true)
             {
-                page.Name = $"{config.Name} (!)";
-                var title = CreateDefaultReplacerElems(page, config, missing.Count);
-                missing.ForEach(x =>
-                {
-                    FunctionElement elem = null;
-                    elem = page.CreateFunction($"{(!string.IsNullOrWhiteSpace(x.Title) ? x.Title : x.Barcode)}", Color.red, () =>
-                    {
-                        InstallMissing(x, elem, () =>
-                        {
-                            page.Remove(elem);
-                            missing.Remove(x);
-                            title.ElementName = $"Missing Dependencies ({missing.Count})";
-                            Notify("Success", "Successfully downloaded and installed missing dependency", 3.5f, NotificationType.Success);
-                            if (!missing.Any())
-                                CreateReplacerPage(page, config);
-                        });
-                    });
-                });
+                MissingDependencies(missing, config, page);
             }
             else
             {
@@ -184,16 +195,40 @@ namespace ItemReplacer.Managers
                     x.Entries.ForEach(e =>
                     {
                         if (e.GetTitle() == EntryPage.Name)
-                            Entry(config, x, e);
+                        {
+                            Entry(config, x, e, false);
+                            entryUpdated = true;
+                        }
                     });
                 });
             }
 
-            if (Menu.CurrentPage == CategoryPage && !categoryUpdated)
-                Menu.OpenPage(page);
-
             if (Menu.CurrentPage == page)
                 CorrectPage(page);
+
+            return (categoryUpdated, entryUpdated);
+        }
+
+        internal static void MissingDependencies(List<ReplacerDependency> missing, ReplacerConfig config, Page page)
+        {
+            page.Name = $"{config.Name} (!)";
+            var title = CreateDefaultReplacerElems(page, config, missing.Count);
+            missing.ForEach(x =>
+            {
+                FunctionElement elem = null;
+                elem = page.CreateFunction($"{(!string.IsNullOrWhiteSpace(x.Title) ? x.Title : x.Barcode)}", Color.red, () =>
+                {
+                    InstallMissing(x, elem, () =>
+                    {
+                        page.Remove(elem);
+                        missing.Remove(x);
+                        title.ElementName = $"Missing Dependencies ({missing.Count})";
+                        Notify("Success", "Successfully downloaded and installed missing dependency", 3.5f, NotificationType.Success);
+                        if (!missing.Any())
+                            CreateReplacerPage(page, config);
+                    });
+                });
+            });
         }
 
         internal static string CategoryName { get; set; }
@@ -212,6 +247,8 @@ namespace ItemReplacer.Managers
                 config.TrySaveToFile(false);
                 SetupReplacers();
             });
+            CategoryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+
             CategoryPage.CreateString("Name", Color.white, category.Name, (v) =>
             {
                 CategoryName = v;
@@ -251,17 +288,12 @@ namespace ItemReplacer.Managers
             }
         }
 
-        internal static void Entry(ReplacerConfig config, ReplacerCategory category, ReplacerEntry entry)
+        internal static void Entry(ReplacerConfig config, ReplacerCategory category, ReplacerEntry entry, bool open = true)
         {
             EntryPage.Name = entry.GetTitle();
             EntryPage.RemoveAll();
 
-            EntryPage.CreateFunction("Delete Entry", Color.red, () =>
-            {
-                category.Entries.Remove(entry);
-                config.TrySaveToFile(false);
-                SetupReplacers();
-            });
+            EntryPage.CreateFunction("Delete Entry", Color.red, () => EntryDeleteDialog(entry, category, config));
             EntryPage.CreateEnum("Match Type", Color.cyan, entry.MatchType, (v) =>
             {
                 entry.MatchType = (MatchType)v;
@@ -270,7 +302,7 @@ namespace ItemReplacer.Managers
             });
             EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
-            EntryPage.CreateString("Original", Color.white, category.Name, (v) =>
+            EntryPage.CreateString("Original", Color.white, entry.Original, (v) =>
             {
                 entry.Original = v;
                 config.TrySaveToFile(false);
@@ -298,7 +330,7 @@ namespace ItemReplacer.Managers
             });
             EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
-            EntryPage.CreateString("Replacement", Color.white, category.Name, (v) =>
+            EntryPage.CreateString("Replacement", Color.white, entry.Replacement, (v) =>
             {
                 entry.Replacement = v;
                 config.TrySaveToFile(false);
@@ -325,6 +357,11 @@ namespace ItemReplacer.Managers
                 SetupReplacers();
             });
             EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+
+            if (Menu.CurrentPage == EntryPage)
+                CorrectPage(EntryPage);
+            else if (open)
+                Menu.OpenPage(EntryPage);
         }
 
         internal static SpawnableCrate GetItem(Handedness hand)
@@ -371,6 +408,7 @@ namespace ItemReplacer.Managers
                 {
                     config.Categories.Remove(category);
                     config.TrySaveToFile(false);
+                    SetupReplacers();
                 },
                 Deny = () => Core.Logger.Msg("Deletion cancelled")
             });
@@ -381,11 +419,12 @@ namespace ItemReplacer.Managers
             Menu.DisplayDialog(new DialogData()
             {
                 Title = "Are you sure?",
-                Message = $"Are you sure you want to delete the entry? This action cannot be undone.",
+                Message = "Are you sure you want to delete the entry? This action cannot be undone.",
                 Confirm = () =>
                 {
                     category.Entries.Remove(entry);
                     config.TrySaveToFile(false);
+                    SetupReplacers();
                 },
                 Deny = () => Core.Logger.Msg("Deletion cancelled")
             });
