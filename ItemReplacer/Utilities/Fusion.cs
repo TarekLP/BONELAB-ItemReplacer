@@ -10,6 +10,7 @@ using BoneLib.BoneMenu;
 
 namespace ItemReplacer.Utilities
 {
+    // TODO: make sure fusion support works 100% correctly
     internal static class Fusion
     {
         public static bool HasFusion => Core.FindMelon("LabFusion", "Lakatrazz") != null;
