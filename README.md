@@ -24,6 +24,10 @@ This mod was created to allow for easier creation of replacers for base game ite
 
 **A**: Everything is explained in the [wiki](https://github.com/TarekLP/BONELAB-ItemReplacer/wiki)!
 
+### Q: Under what category should I upload the replacer on Thunderstore?
+
+**A**: There isn't any perfect category for it, but it is recommended that you use the **Custom Items** category.
+
 #
 
 This mod was provided to you by T&H Modding Inc. ([Tarek](https://github.com/TarekLP) and [HAHOOS](https://github.com/HAHOOS))
