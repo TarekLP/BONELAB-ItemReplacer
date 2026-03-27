@@ -12,6 +12,7 @@ This mod was created to allow for easier creation of replacers for base game ite
 # Features
 
 - Dynamic loading of replacers from file (can modify, remove or add file/replacer while the game is running)
+- An in-game editor for replacers
 - Advanced matching methods (RegEx or Scriban)
 - Full LabFusion support
 
