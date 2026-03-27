@@ -17,7 +17,7 @@ namespace ItemReplacer
         public const string Author = "T&H Modding";
         public const string ThunderstoreAuthor = "TH_Modding";
 
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         public const string Description = "Replaces Items in BONELAB with user specified replacements.";
         public const string DownloadLink = $"https://thunderstore.io/c/bonelab/p/{ThunderstoreAuthor}/{Name}/";
     }
