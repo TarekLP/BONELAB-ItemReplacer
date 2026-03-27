@@ -18,7 +18,7 @@ namespace ItemReplacer
         public const string ThunderstoreAuthor = "TH_Modding";
 
         public const string Version = "1.1.0";
-        public const string Description = "Replaces Items in BONELAB with user specified replacements.";
+        public const string Description = "Item Replacer is a code mod that aims to allow players to easily create replacements for in-game items";
         public const string DownloadLink = $"https://thunderstore.io/c/bonelab/p/{ThunderstoreAuthor}/{Name}/";
     }
 
