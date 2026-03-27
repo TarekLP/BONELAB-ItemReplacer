@@ -39,7 +39,7 @@ namespace ItemReplacer.Managers
         internal static FunctionElement TotalReplacedElement { get; set; }
         internal static FunctionElement LevelReplacedElement { get; set; }
 
-        private static Dictionary<string, Page> ReplacerPages { get; } = [];
+        internal static Dictionary<string, Page> ReplacerPages { get; } = [];
 
         public static bool EditorMode { get; set; }
 
@@ -65,7 +65,7 @@ namespace ItemReplacer.Managers
                 return;
 
             CategoryPage ??= ReplacersPage.CreatePage("Example Category", Color.magenta);
-            EntryPage ??= ReplacersPage.CreatePage("Example Entry", Color.magenta);
+            EntryPage ??= CategoryPage.CreatePage("Example Entry", Color.magenta);
             ReplacersPage.RemoveAll();
             ReplacersPage.CreateBool("Editor Mode", Color.cyan, EditorMode, (v) =>
             {
@@ -110,16 +110,19 @@ namespace ItemReplacer.Managers
 
         internal static void FixMenu(bool category, bool entry)
         {
+            if (Menu.CurrentPage == null)
+                return;
+
             if (Menu.CurrentPage == CategoryPage && !category)
                 Menu.OpenPage(ReplacersPage);
             else if (Menu.CurrentPage == EntryPage && !entry)
                 Menu.OpenPage(category ? CategoryPage : ReplacersPage);
 
-            if (Menu.CurrentPage != CategoryPage && Menu.CurrentPage != EntryPage &&
-                Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
-            {
+            if (Menu.CurrentPage == CategoryPage || Menu.CurrentPage == EntryPage)
+                return;
+
+            if (Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
                 Menu.OpenParentPage();
-            }
         }
 
         internal static void CreateReplacer()
@@ -133,7 +136,7 @@ namespace ItemReplacer.Managers
                     Name = ReplacerName,
                     Color = "#FFFFFF",
                     Enabled = true,
-                    Categories = []
+                    Categories = [new("Example")]
                 };
                 ReplacerManager.Register(config);
             }
@@ -235,9 +238,14 @@ namespace ItemReplacer.Managers
 
         internal static void Category(ReplacerConfig config, ReplacerCategory category, bool open = true)
         {
+            CategoryPage ??= ReplacersPage.CreatePage("Example Category", Color.magenta);
             CategoryName = category.Name;
             CategoryPage.Color = category.Enabled ? Color.green : Color.red;
             CategoryPage.Name = category.Name;
+            var page = PageFromConfig(config);
+            if (page != null)
+                CategoryPage.Parent = page;
+
             CategoryPage.RemoveAll();
 
             CategoryPage.CreateFunction("Delete Category", Color.red, () => CategoryDeleteDialog(category, config));
