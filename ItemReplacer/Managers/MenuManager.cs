@@ -1,24 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
-
-using MelonLoader;
-
-using UnityEngine;
 
 using BoneLib;
 using BoneLib.BoneMenu;
 using BoneLib.BoneMenu.UI;
 using BoneLib.Notifications;
 
+using Il2CppSLZ.Marrow;
+using Il2CppSLZ.Marrow.Interaction;
+using Il2CppSLZ.Marrow.Warehouse;
+
 using ItemReplacer.Helpers;
 using ItemReplacer.Patches;
 using ItemReplacer.Utilities;
 
-using Il2CppSLZ.Marrow.Warehouse;
-using Il2CppSLZ.Marrow.Interaction;
+using MelonLoader;
+
+using UnityEngine;
 
 namespace ItemReplacer.Managers
 {
@@ -33,6 +34,8 @@ namespace ItemReplacer.Managers
         public static Page DebugPage { get; private set; }
 
         public static Page CategoryPage { get; private set; }
+
+        public static Page EntryPage { get; private set; }
 
         internal static FunctionElement TotalReplacedElement { get; set; }
         internal static FunctionElement LevelReplacedElement { get; set; }
@@ -63,6 +66,7 @@ namespace ItemReplacer.Managers
                 return;
 
             CategoryPage ??= ReplacersPage.CreatePage("Example Category", Color.magenta);
+            EntryPage ??= ReplacersPage.CreatePage("Example Entry", Color.magenta);
             ReplacersPage.RemoveAll();
             ReplacersPage.CreateBool("Editor Mode", Color.cyan, EditorMode, (v) =>
             {
@@ -122,6 +126,8 @@ namespace ItemReplacer.Managers
             if (EditorMode)
                 page.CreateFunction("Delete Replacer", Color.red, () => ConfigDeleteDialog(config));
 
+            bool categoryUpdated = false;
+
             var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))?.ToList();
             if (missing?.Any() == true)
             {
@@ -167,17 +173,37 @@ namespace ItemReplacer.Managers
                     page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
                 }
 
-                config.Categories.ForEach(x => x.CreateCategory(config, page));
+                config.Categories.ForEach(x =>
+                {
+                    x.CreateCategory(config, page);
+                    if (CategoryName == x.Name)
+                    {
+                        Category(config, x, open: false);
+                        categoryUpdated = true;
+                    }
+                    x.Entries.ForEach(e =>
+                    {
+                        if (e.GetTitle() == EntryPage.Name)
+                            Entry(config, x, e);
+                    });
+                });
             }
+
+            if (Menu.CurrentPage == CategoryPage && !categoryUpdated)
+                Menu.OpenPage(page);
 
             if (Menu.CurrentPage == page)
                 CorrectPage(page);
         }
 
-        internal static void Category(ReplacerConfig config, ReplacerCategory category)
+        internal static string CategoryName { get; set; }
+
+        internal static void Category(ReplacerConfig config, ReplacerCategory category, bool open = true)
         {
+            CategoryName = category.Name;
             CategoryPage.Color = category.Enabled ? Color.green : Color.red;
             CategoryPage.Name = category.Name;
+            CategoryPage.RemoveAll();
 
             CategoryPage.CreateFunction("Delete Category", Color.red, () => CategoryDeleteDialog(category, config));
             CategoryPage.CreateBool("Enabled", Color.green, category.Enabled, (v) =>
@@ -188,6 +214,7 @@ namespace ItemReplacer.Managers
             });
             CategoryPage.CreateString("Name", Color.white, category.Name, (v) =>
             {
+                CategoryName = v;
                 category.Name = v;
                 config.TrySaveToFile(false);
                 SetupReplacers();
@@ -209,26 +236,107 @@ namespace ItemReplacer.Managers
 
             if (Menu.CurrentPage == CategoryPage)
                 CorrectPage(CategoryPage);
-            else
+            else if (open)
                 Menu.OpenPage(CategoryPage);
         }
 
         internal static void CreateEntry(ReplacerCategory category, ReplacerConfig config, Handedness hand)
         {
-            var crate = GetSpawnableFromHand(hand);
-            if (crate == null)
+            var crate = GetItem(hand);
+            if (crate != null)
             {
-                Notify("Error", $"No item is being held in {(hand == Handedness.LEFT ? "left" : "right")} hand!", 3.5f, NotificationType.Error);
-                return;
+                category.Entries.Add(new ReplacerEntry(crate.Barcode.ID, string.Empty));
+                config.TrySaveToFile(false);
+                SetupReplacers();
             }
-
-            category.Entries.Add(new ReplacerEntry(crate.Barcode.ID, string.Empty));
-            config.TrySaveToFile(false);
-            SetupReplacers();
         }
 
         internal static void Entry(ReplacerConfig config, ReplacerCategory category, ReplacerEntry entry)
         {
+            EntryPage.Name = entry.GetTitle();
+            EntryPage.RemoveAll();
+
+            EntryPage.CreateFunction("Delete Entry", Color.red, () =>
+            {
+                category.Entries.Remove(entry);
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateEnum("Match Type", Color.cyan, entry.MatchType, (v) =>
+            {
+                entry.MatchType = (MatchType)v;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+
+            EntryPage.CreateString("Original", Color.white, category.Name, (v) =>
+            {
+                entry.Original = v;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction("Set From Left Hand", Color.green, () =>
+            {
+                var item = GetItem(Handedness.LEFT);
+                if (item == null)
+                    return;
+
+                entry.Original = item.Barcode.ID;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction("Set From From Right Hand", Color.cyan, () =>
+            {
+                var item = GetItem(Handedness.RIGHT);
+                if (item == null)
+                    return;
+
+                entry.Original = item.Barcode.ID;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+
+            EntryPage.CreateString("Replacement", Color.white, category.Name, (v) =>
+            {
+                entry.Replacement = v;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction("Set From From Left Hand", Color.green, () =>
+            {
+                var item = GetItem(Handedness.LEFT);
+                if (item == null)
+                    return;
+
+                entry.Replacement = item.Barcode.ID;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction("Set From From Right Hand", Color.cyan, () =>
+            {
+                var item = GetItem(Handedness.RIGHT);
+                if (item == null)
+                    return;
+
+                entry.Replacement = item.Barcode.ID;
+                config.TrySaveToFile(false);
+                SetupReplacers();
+            });
+            EntryPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+        }
+
+        internal static SpawnableCrate GetItem(Handedness hand)
+        {
+            var crate = GetSpawnableFromHand(hand);
+            if (crate == null)
+            {
+                Notify("Error", $"No item is being held in {(hand == Handedness.LEFT ? "left" : "right")} hand!", 3.5f, NotificationType.Error);
+                return null;
+            }
+
+            return crate;
         }
 
         internal static string GetTitle(this ReplacerEntry entry)
@@ -262,6 +370,21 @@ namespace ItemReplacer.Managers
                 Confirm = () =>
                 {
                     config.Categories.Remove(category);
+                    config.TrySaveToFile(false);
+                },
+                Deny = () => Core.Logger.Msg("Deletion cancelled")
+            });
+        }
+
+        internal static void EntryDeleteDialog(ReplacerEntry entry, ReplacerCategory category, ReplacerConfig config)
+        {
+            Menu.DisplayDialog(new DialogData()
+            {
+                Title = "Are you sure?",
+                Message = $"Are you sure you want to delete the entry? This action cannot be undone.",
+                Confirm = () =>
+                {
+                    category.Entries.Remove(entry);
                     config.TrySaveToFile(false);
                 },
                 Deny = () => Core.Logger.Msg("Deletion cancelled")
