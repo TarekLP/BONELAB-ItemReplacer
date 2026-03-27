@@ -12,6 +12,7 @@ This mod was created to allow for easier creation of replacers for base game ite
 # Features
 
 - Dynamic loading of replacers from file (can modify, remove or add file/replacer while the game is running)
+- An in-game editor for replacers
 - Advanced matching methods (RegEx or Scriban)
 - Full LabFusion support
 
@@ -22,6 +23,10 @@ This mod was created to allow for easier creation of replacers for base game ite
 ### Q: How do I actually make a replacer
 
 **A**: Everything is explained in the [wiki](https://github.com/TarekLP/BONELAB-ItemReplacer/wiki)!
+
+### Q: Under what category should I upload the replacer on Thunderstore?
+
+**A**: There isn't any perfect category for it, but it is recommended that you use the **Custom Items** category.
 
 #
 
