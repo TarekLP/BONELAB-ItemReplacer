@@ -71,7 +71,7 @@ namespace ItemReplacer.Patches
                     return true;
                 }
 
-                if (PreferencesManager.IsDebug())
+                if (PreferencesManager.IsDebug() && (PreferencesManager.FusionSupport?.Value != true || !Fusion.IsConnected || Fusion.MeetsConditions(__instance)))
                     Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
                 if (!Fusion.IsConnected)
