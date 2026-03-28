@@ -1,20 +1,18 @@
-<p align="center"><img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%"></p>
-<h1 align="center">BONELAB - Item Replacer</h1>
+<p align="center"><img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="96px" height="96px"></p>
+<h1 align="center">Item Replacer</h1>
 
-# Introduction
+Item Replacer is a code mod that aims to allow players to easily create replacements for in-game items, such as replacing everything with a Miku plushie if u want i guess?
 
-Item Replacer is a code mod that aims to allow players to easily (somewhat at least) create replacements for in-game items, such as replacing everything with a Miku plushie if u want i guess?
+Now what makes it different from the already existing replacement methods that exist on mod.io is that, it properly syncs with LabFusion and you can still easily spawn the original spawnable, which wasnt possible with those before.
 
-This mod was created to allow for easier creation of replacers for base game items to be replaced by modded ones, while also properly syncing the items with other players in LabFusion.
-
-# Features
+<h2 align="center">Features</h2>
 
 - Dynamic loading of replacers from file (can modify, remove or add file/replacer while the game is running)
 - An in-game editor for replacers
 - Advanced matching methods (RegEx or Scriban)
 - Full LabFusion support
 
-# FAQ
+<h2 align="center">FAQ</h2>
 
 *let's ignore the fact that this mod JUST got released, so there were no questions*
 
@@ -24,7 +22,7 @@ This mod was created to allow for easier creation of replacers for base game ite
 
 ### Q: Under what category should I upload the replacer on Thunderstore?
 
-**A**: There isn't any perfect category for it, but it is recommended that you use the **Custom Items** category.
+**A**: You should use the **Custom Items** category when uploading the replacer to Thunderstore
 
 ### Q: I keep getting errors when replacing things, how do I fix this?
 
