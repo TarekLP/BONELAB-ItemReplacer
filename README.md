@@ -28,6 +28,10 @@ This mod was created to allow for easier creation of replacers for base game ite
 
 **A**: There isn't any perfect category for it, but it is recommended that you use the **Custom Items** category.
 
+### Q: I keep getting errors when replacing things, how do I fix this?
+
+**A**: Some spawners require a specific spawnable to be spawned to function properly. For example if in `05 - Big Anomaly` you will replace the Omni Projectors with a spawnable that is not an NPC, the spawner will throw errors and continuosly spawn ur item, causing the game to lag. There isn't any fix for this as of now
+
 #
 
 This mod was provided to you by T&H Modding Inc. ([Tarek](https://github.com/TarekLP) and [HAHOOS](https://github.com/HAHOOS))
