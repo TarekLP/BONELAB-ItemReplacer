@@ -53,6 +53,15 @@ namespace ItemReplacer.Patches
             string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
             string targetBarcode = GetReplacement(currentBarcode);
 
+            if (string.IsNullOrWhiteSpace(currentBarcode)
+                || !__instance.spawnableCrateReference.Barcode.IsValid()
+                || !__instance.spawnableCrateReference.Barcode.IsValidSize()
+                || currentBarcode == Barcode.EMPTY
+                || currentBarcode == Barcode.EMPTY_OLD)
+            {
+                return true;
+            }
+
             if (targetBarcode != null)
             {
                 var crateRef = new SpawnableCrateReference(targetBarcode);
@@ -94,9 +103,6 @@ namespace ItemReplacer.Patches
 
             void continuation(Poolee poolee)
             {
-                if (poolee == null)
-                    return;
-
                 _source.TrySetResult(poolee);
 
                 if (callback != null)
@@ -110,7 +116,7 @@ namespace ItemReplacer.Patches
 
         private static void HandleSpawner(CrateSpawner spawner, Poolee poolee)
         {
-            var go = poolee?.gameObject;
+            var go = poolee.gameObject;
             if (go == null)
                 return;
 
@@ -127,6 +133,9 @@ namespace ItemReplacer.Patches
 
             try
             {
+                // Some spawners might cause issues if you change the spawnable, for example from an NPC to a spawnable.
+                // Hopefully there won't be many cases like this, but it's still an issue
+                // Might resolve it later, though it will be difficult to patch it everywhere, if even possible
                 spawner.onSpawnEvent?.Invoke(spawner, go);
             }
             catch (Exception e)

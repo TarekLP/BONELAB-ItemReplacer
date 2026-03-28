@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "ItemReplacer": {
+      "commandName": "Project"
+    },
+    "BONELAB": {
+      "commandName": "Executable",
+      "executablePath": "$(BONELAB_DIR)\\BONELAB_Oculus_Windows64.exe",
+      "workingDirectory": "$(BONELAB_DIR)",
+      "authenticationMode": "None"
+    }
+  }
+}
