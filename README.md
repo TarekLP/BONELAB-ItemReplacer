@@ -1,11 +1,9 @@
-<div align="center">
-  <img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%">
-  <h1 align="center">BONELAB - Item Replacer</h1>
-</div>
+<p align="center"><img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="10%"></p>
+<h1 align="center">BONELAB - Item Replacer</h1>
 
 # Introduction
 
-Item Replacer is a code mod that aims to allow players to easily (somewhat at least) create replacer for in-game items, such as replacing everything with a Miku plushie if u want i guess?
+Item Replacer is a code mod that aims to allow players to easily (somewhat at least) create replacements for in-game items, such as replacing everything with a Miku plushie if u want i guess?
 
 This mod was created to allow for easier creation of replacers for base game items to be replaced by modded ones, while also properly syncing the items with other players in LabFusion.
 
