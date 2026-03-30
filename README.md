@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="https://github.com/TarekLP/BONELAB-ItemReplacer/blob/master/Utilities/img/ItemReplacerLogo.png?raw=true" alt="Item Replacer Logo" width="96px" height="96px"></p>
+<p align="center"><img align="center" src="https://raw.githubusercontent.com/TarekLP/BONELAB-ItemReplacer/refs/heads/master/Utilities/img/ItemReplacerLogo.png" alt="Item Replacer Logo" width="96px" height="96px"></p>
 <h1 align="center">Item Replacer</h1>
 
 Item Replacer is a code mod that aims to allow players to easily create replacements for in-game items, such as replacing everything with a Miku plushie if u want i guess?
