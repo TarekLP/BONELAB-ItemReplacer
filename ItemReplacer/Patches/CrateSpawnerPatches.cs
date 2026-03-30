@@ -24,13 +24,11 @@ namespace ItemReplacer.Patches
         public static int TotalReplacements { get; internal set; } = 0;
         public static int LevelReplacements { get; internal set; } = 0;
 
-        // Item Replacement Logic
         [HarmonyPrefix]
         [HarmonyPriority(int.MaxValue)]
         [HarmonyPatch(nameof(CrateSpawner.SpawnSpawnableAsync))]
         public static bool SpawnSpawnableAsyncPrefix(CrateSpawner __instance, bool isHidden, ref UniTask<Poolee> __result)
         {
-            Core.Logger.Msg("hi");
             try
             {
                 if (ReplaceItem(__instance, ref __result))
@@ -47,17 +45,23 @@ namespace ItemReplacer.Patches
 
         private static bool ReplaceItem(CrateSpawner __instance, ref UniTask<Poolee> __result)
         {
-            // Is the mod enabled or disabled?
             if (PreferencesManager.Enabled?.Value != true) return true;
 
-            // if there is no barcode, there is no replacement.
             if (__instance?.spawnableCrateReference?.Barcode == null) return true;
 
             string currentBarcode = __instance.spawnableCrateReference.Barcode.ID;
             string currentTitle = __instance.spawnableCrateReference?.Crate?.Title ?? "N/A";
             string targetBarcode = GetReplacement(currentBarcode);
 
-            // While the barcode isnt null, there is a replacement.
+            if (string.IsNullOrWhiteSpace(currentBarcode)
+                || !__instance.spawnableCrateReference.Barcode.IsValid()
+                || !__instance.spawnableCrateReference.Barcode.IsValidSize()
+                || currentBarcode == Barcode.EMPTY
+                || currentBarcode == Barcode.EMPTY_OLD)
+            {
+                return true;
+            }
+
             if (targetBarcode != null)
             {
                 var crateRef = new SpawnableCrateReference(targetBarcode);
@@ -67,12 +71,11 @@ namespace ItemReplacer.Patches
                     return true;
                 }
 
-                if (PreferencesManager.IsDebug())
+                if (PreferencesManager.IsDebug() && (PreferencesManager.FusionSupport?.Value != true || !Fusion.IsConnected || Fusion.MeetsConditions(__instance)))
                     Core.Logger.Msg($"Replacing with: {crate.Title.RemoveUnityRichText()} - {targetBarcode} (Original: {currentTitle.RemoveUnityRichText()} - {currentBarcode}) (Spawner: {__instance.name})");
 
                 if (!Fusion.IsConnected)
                 {
-                    // fuck this code, the UniTaskCompletionSource does not work correctly (probably fires too late, causing bugs)
                     SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
                     ReplacedSuccess();
                 }
@@ -100,9 +103,6 @@ namespace ItemReplacer.Patches
 
             void continuation(Poolee poolee)
             {
-                if (poolee == null)
-                    return;
-
                 _source.TrySetResult(poolee);
 
                 if (callback != null)
@@ -116,7 +116,7 @@ namespace ItemReplacer.Patches
 
         private static void HandleSpawner(CrateSpawner spawner, Poolee poolee)
         {
-            var go = poolee?.gameObject;
+            var go = poolee.gameObject;
             if (go == null)
                 return;
 
@@ -133,6 +133,9 @@ namespace ItemReplacer.Patches
 
             try
             {
+                // Some spawners might cause issues if you change the spawnable, for example from an NPC to a spawnable.
+                // Hopefully there won't be many cases like this, but it's still an issue
+                // Might resolve it later, though it will be difficult to patch it everywhere, if even possible
                 spawner.onSpawnEvent?.Invoke(spawner, go);
             }
             catch (Exception e)
@@ -174,6 +177,9 @@ namespace ItemReplacer.Patches
 
         private static bool Match(string barcode, ReplacerEntry entry)
         {
+            if (string.IsNullOrWhiteSpace(entry?.Original) || string.IsNullOrWhiteSpace(entry?.Replacement))
+                return false;
+
             if (entry.MatchType == MatchType.RegEx)
                 return Regex.IsMatch(barcode, entry.Original);
             else if (entry.MatchType == MatchType.Scriban)

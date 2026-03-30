@@ -372,6 +372,7 @@ namespace ItemReplacer.Managers
             if (config != null)
             {
                 _configs.Remove(config);
+                MenuManager.SetupReplacers();
                 if (removeFile && !string.IsNullOrWhiteSpace(config.FilePath))
                 {
                     Core.Logger.Msg($"Removing file at '{config.FilePath}'");
@@ -473,13 +474,9 @@ namespace ItemReplacer.Managers
                     writer.DisposeAsync().AsTask().ContinueWith((task) =>
                     {
                         if (task.IsCompletedSuccessfully)
-                        {
                             LoggerMsg($"Saved '{ID}' to file successfully!", printMessage);
-                        }
                         else
-                        {
                             LoggerError($"Failed to save '{ID}' to file", task.Exception, printMessage);
-                        }
                     });
                 }
                 catch (Exception ex)
@@ -695,9 +692,7 @@ namespace ItemReplacer.Managers
             {
                 Core.Logger.Error("Error parsing Scriban template: " + _original);
                 foreach (var error in Template.Messages)
-                {
                     Core.Logger.Error($"{(error.Type == Scriban.Parsing.ParserMessageType.Error ? "[ERR]" : "[WARN]")} {error.Message}");
-                }
             }
         }
     }

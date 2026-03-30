@@ -129,6 +129,22 @@ namespace ItemReplacer.Utilities
             return false;
         }
 
+        internal static bool MeetsConditions(CrateSpawner spawner)
+        {
+            // If this scene is unsynced, the spawner can function as normal.
+            if (!LabFusion.Scene.NetworkSceneManager.IsLevelNetworked)
+                return false;
+
+            if (IsSingleplayerOnly(spawner))
+                return false;
+
+            // If we don't own the CrateSpawner, don't allow a spawn from it
+            if (!HasOwnership(spawner))
+                return false;
+
+            return true;
+        }
+
         private static bool HasOwnership(CrateSpawner spawner)
         {
             if (LabFusion.Marrow.Extenders.CrateSpawnerExtender.Cache.TryGet(spawner, out var networkEntity))
