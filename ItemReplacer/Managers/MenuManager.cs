@@ -24,8 +24,6 @@ namespace ItemReplacer.Managers
 {
     public static class MenuManager
     {
-        public static Page AuthorPage { get; private set; }
-
         public static Page ModPage { get; private set; }
 
         public static Page ReplacersPage { get; private set; }
@@ -49,8 +47,7 @@ namespace ItemReplacer.Managers
 
         public static void Setup()
         {
-            AuthorPage ??= Page.Root.CreatePage(ModInfo.Author, Color.white);
-            ModPage ??= AuthorPage.CreatePage(ModInfo.Name, new Color(0.6f, 0.0f, 0.8f));
+            ModPage ??= Page.Root.CreatePage(ModInfo.Name, new Color(0.6f, 0.0f, 0.8f));
             ModPage.CreateBoolPref("Enable Mod", new Color(0, 1, 0), ref PreferencesManager.Enabled);
             ModPage.CreateBoolPref("LabFusion Support", Color.cyan, ref PreferencesManager.FusionSupport);
             ReplacersPage ??= ModPage.CreatePage("Replacers", Color.yellow);
