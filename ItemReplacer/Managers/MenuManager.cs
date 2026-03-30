@@ -32,6 +32,8 @@ namespace ItemReplacer.Managers
 
         public static Page DebugPage { get; private set; }
 
+        public static Page ReplacerPage { get; private set; }
+
         public static Page CategoryPage { get; private set; }
 
         public static Page EntryPage { get; private set; }
@@ -39,11 +41,11 @@ namespace ItemReplacer.Managers
         internal static FunctionElement TotalReplacedElement { get; set; }
         internal static FunctionElement LevelReplacedElement { get; set; }
 
-        internal static Dictionary<string, Page> ReplacerPages { get; } = [];
-
         public static bool EditorMode { get; set; }
 
         private static string ReplacerName { get; set; }
+
+        public static string OpenedReplacerID { get; private set; }
 
         public static void Setup()
         {
@@ -64,7 +66,8 @@ namespace ItemReplacer.Managers
             if (ReplacersPage == null)
                 return;
 
-            CategoryPage ??= ReplacersPage.CreatePage("Example Category", Color.magenta);
+            ReplacerPage ??= ReplacersPage.CreatePage("Example Replacer", Color.magenta);
+            CategoryPage ??= ReplacerPage.CreatePage("Example Category", Color.magenta);
             EntryPage ??= CategoryPage.CreatePage("Example Entry", Color.magenta);
             ReplacersPage.RemoveAll();
             ReplacersPage.CreateBool("Editor Mode", Color.cyan, EditorMode, (v) =>
@@ -94,18 +97,37 @@ namespace ItemReplacer.Managers
                 if (string.IsNullOrWhiteSpace(config.ID))
                     Core.Logger.Error("ID is null or empty, cannot generate element");
 
-                Page page = PageFromConfig(config);
-
-                var link = ReplacersPage.CreatePageLink(page);
+                var link = ReplacersPage.CreateFunction(config.Name, config.GetColor(), () => CreateReplacerPage(config, true));
                 if (!string.IsNullOrWhiteSpace(config.Description))
                     link.SetTooltip(config.Description);
 
-                var (category, entry) = CreateReplacerPage(page, config);
-                if (entry) entryUpdated = true;
+                var (category, entry) = UpdatePages(config, false);
                 if (category) categoryUpdated = true;
+                if (entry) entryUpdated = true;
             }
 
             FixMenu(categoryUpdated, entryUpdated);
+        }
+
+        internal static (bool category, bool entry) UpdatePages(ReplacerConfig config, bool createElems)
+        {
+            bool categoryUpdated = false;
+            bool entryUpdated = false;
+            config.Categories.ForEach(x =>
+            {
+                if (createElems)
+                    x.CreateCategory(config, ReplacerPage);
+                if (CategoryName == x.Name)
+                    categoryUpdated = true;
+
+                x.Entries.ForEach(e =>
+                {
+                    if (e.GetTitle() == EntryPage.Name)
+                        entryUpdated = true;
+                });
+            });
+
+            return (categoryUpdated, entryUpdated);
         }
 
         internal static void FixMenu(bool category, bool entry)
@@ -121,7 +143,7 @@ namespace ItemReplacer.Managers
             if (Menu.CurrentPage == CategoryPage || Menu.CurrentPage == EntryPage)
                 return;
 
-            if (Menu.CurrentPage.Parent == ReplacersPage && !ReplacerPages.Any(x => x.Value == Menu.CurrentPage))
+            if (Menu.CurrentPage == ReplacerPage && !ReplacerManager.Configs.Any(x => x.ID == OpenedReplacerID))
                 Menu.OpenParentPage();
         }
 
@@ -147,69 +169,54 @@ namespace ItemReplacer.Managers
             }
         }
 
-        internal static (bool category, bool entry) CreateReplacerPage(Page page, ReplacerConfig config)
+        internal static void CreateReplacerPage(ReplacerConfig config, bool open = false)
         {
-            page.RemoveAll();
+            ReplacerPage.RemoveAll();
             if (!string.IsNullOrWhiteSpace(config.FilePath) && File.Exists(config.FilePath))
-                page.CreateFunction($"File: {Path.GetFileName(config.FilePath)}", Color.white, null).SetProperty(ElementProperties.NoBorder);
+                ReplacerPage.CreateFunction($"File: {Path.GetFileName(config.FilePath)}", Color.white, null).SetProperty(ElementProperties.NoBorder);
 
             if (EditorMode)
-                page.CreateFunction("Delete Replacer", Color.red, () => ConfigDeleteDialog(config));
-
-            bool categoryUpdated = false;
-            bool entryUpdated = false;
+                ReplacerPage.CreateFunction("Delete Replacer", Color.red, () => ConfigDeleteDialog(config));
 
             var missing = config.Dependencies?.Where(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))?.ToList();
             if (missing?.Any() == true)
             {
-                MissingDependencies(missing, config, page);
+                MissingDependencies(missing, config, ReplacerPage);
             }
             else
             {
-                page.Name = config.Name;
-                page.CreateBool("Enabled", Color.green, config.Enabled, (v) =>
+                ReplacerPage.Name = config.Name;
+                ReplacerPage.CreateBool("Enabled", Color.green, config.Enabled, (v) =>
                 {
                     config.Enabled = v;
                     config.SaveToFile(false);
                 });
 
-                page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+                ReplacerPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
                 if (EditorMode)
                 {
                     string category = string.Empty;
-                    page.CreateString("Name", Color.white, category, (v) => category = v);
-                    page.CreateFunction("Create New Category", Color.green, () =>
+                    ReplacerPage.CreateString("Name", Color.white, category, (v) => category = v);
+                    ReplacerPage.CreateFunction("Create New Category", Color.green, () =>
                     {
                         config.Categories.Add(new ReplacerCategory(category, string.Empty, []));
                         config.TrySaveToFile(false);
                         SetupReplacers();
                     });
-                    page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
+                    ReplacerPage.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
                 }
 
-                config.Categories.ForEach(x =>
-                {
-                    x.CreateCategory(config, page);
-                    if (CategoryName == x.Name)
-                    {
-                        Category(config, x, open: false);
-                        categoryUpdated = true;
-                    }
-                    x.Entries.ForEach(e =>
-                    {
-                        if (e.GetTitle() == EntryPage.Name)
-                        {
-                            Entry(config, x, e, false);
-                            entryUpdated = true;
-                        }
-                    });
-                });
+                UpdatePages(config, true);
             }
 
-            if (Menu.CurrentPage == page)
-                CorrectPage(page);
+            if (Menu.CurrentPage == ReplacerPage)
+                CorrectPage(ReplacerPage);
 
-            return (categoryUpdated, entryUpdated);
+            if (open)
+            {
+                Menu.OpenPage(ReplacerPage);
+                OpenedReplacerID = config.ID;
+            }
         }
 
         internal static void MissingDependencies(List<ReplacerDependency> missing, ReplacerConfig config, Page page)
@@ -228,7 +235,7 @@ namespace ItemReplacer.Managers
                         title.ElementName = $"Missing Dependencies ({missing.Count})";
                         Notify("Success", "Successfully downloaded and installed missing dependency", 3.5f, NotificationType.Success);
                         if (!missing.Any())
-                            CreateReplacerPage(page, config);
+                            CreateReplacerPage(config);
                     });
                 });
             });
@@ -242,9 +249,6 @@ namespace ItemReplacer.Managers
             CategoryName = category.Name;
             CategoryPage.Color = category.Enabled ? Color.green : Color.red;
             CategoryPage.Name = category.Name;
-            var page = PageFromConfig(config);
-            if (page != null)
-                CategoryPage.Parent = page;
 
             CategoryPage.RemoveAll();
 
@@ -389,7 +393,7 @@ namespace ItemReplacer.Managers
             if (!AssetWarehouse.ready || AssetWarehouse.Instance == null)
                 return entry.Original;
 
-            if (AssetWarehouse.Instance.TryGetCrate(new(entry.Original), out Crate crate))
+            if (!AssetWarehouse.Instance.TryGetCrate(new(entry.Original), out Crate crate))
                 return entry.Original;
 
             return crate?.Title ?? entry.Original;
@@ -458,7 +462,7 @@ namespace ItemReplacer.Managers
             var title = page.CreateFunction($"Missing Dependencies ({missing})", Color.red, null);
             title.SetProperty(ElementProperties.NoBorder);
             if (Fusion.HasFusion) page.CreateFunction("Press to install missing dependency", Color.white, null).SetProperty(ElementProperties.NoBorder);
-            page.CreateFunction("Refresh", Color.white, () => CreateReplacerPage(page, config));
+            page.CreateFunction("Refresh", Color.white, () => CreateReplacerPage(config));
             page.CreateFunction(" ", Color.white, null).SetProperty(ElementProperties.NoBorder);
             return title;
         }
@@ -588,25 +592,6 @@ namespace ItemReplacer.Managers
 
         private static string FormatBarcode(Crate crate, string typeName)
             => string.Format(dumpFormat, crate.Title?.RemoveUnityRichText() ?? "N/A", crate.Barcode?.ID ?? "N/A", typeName);
-
-        private static Page PageFromConfig(ReplacerConfig config)
-        {
-            Page page;
-            bool missing = (config.Dependencies?.Any(x => !AssetWarehouse.Instance.HasPallet(new(x.Barcode)))) ?? false;
-            string name = missing ? $"{config.Name} (!)" : config.Name;
-            if (!ReplacerPages.ContainsKey(config.ID))
-            {
-                page = ReplacersPage.CreatePage(name, config.GetColor(), createLink: false);
-                ReplacerPages[config.ID] = page;
-            }
-            else
-            {
-                page = ReplacerPages[config.ID];
-                page.Name = name;
-                page.Color = config.GetColor();
-            }
-            return page;
-        }
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable S3011 // Make sure that this accessibility bypass is safe here

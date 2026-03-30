@@ -66,7 +66,9 @@ namespace ItemReplacer
 
         public void OnLevelLoad(LevelInfo info)
         {
-            if (PreferencesManager.DebugMode?.Value == true) LoggerInstance.Msg("Level Loaded!");
+            if (PreferencesManager.IsDebug())
+                LoggerInstance.Msg("Level Loaded!");
+
             CrateSpawnerPatches.LevelReplacements = 0;
             MenuManager.UpdateDebugCounts();
             if (!thunderstoreNotif)

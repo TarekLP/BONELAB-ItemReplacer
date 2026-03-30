@@ -372,7 +372,7 @@ namespace ItemReplacer.Managers
             if (config != null)
             {
                 _configs.Remove(config);
-                MenuManager.ReplacerPages.Remove(config.ID);
+                MenuManager.SetupReplacers();
                 if (removeFile && !string.IsNullOrWhiteSpace(config.FilePath))
                 {
                     Core.Logger.Msg($"Removing file at '{config.FilePath}'");
