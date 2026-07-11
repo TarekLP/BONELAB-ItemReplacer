@@ -19,6 +19,7 @@ namespace ItemReplacer.Managers
         internal static MelonPreferences_Entry<bool> Enabled;
         internal static MelonPreferences_Entry<bool> DebugMode;
 
+        internal static MelonPreferences_Entry<bool> ReplaceEverything;
         internal static MelonPreferences_Entry<bool> FusionSupport;
 #pragma warning restore S2223, IDE0079, RCS1222
 
@@ -43,9 +44,10 @@ namespace ItemReplacer.Managers
 
             Category = MelonPreferences.CreateCategory(ModInfo.Name);
 
-            Enabled = Category.CreateEntry("Enabled", true);
+            Enabled = Category.CreateEntry("Enabled", true, description: "If false, the mod will stop replacing spawnables");
             DebugMode = Category.CreateEntry("Debug", false, description: "When enabled, provides additional logging for debugging");
             FusionSupport = Category.CreateEntry("FusionSupport", true, description: "When enabled, items will be replaced even when you are in a LabFusion lobby");
+            ReplaceEverything = Category.CreateEntry("ReplaceEverything", false, description: "If true, instead of replacing spawnables that are on the level by default, it will also replace spawned /w the SpawnGun");
 
             Category.SetFilePath(ConfigFile, true, false);
             Category.SaveToFile(false);

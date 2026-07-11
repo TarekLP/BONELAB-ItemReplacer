@@ -1,12 +1,14 @@
-﻿using MelonLoader;
+﻿using System.Text.RegularExpressions;
 
 using BoneLib;
 
-using ItemReplacer.Patches;
+using Il2CppSLZ.Marrow.Warehouse;
+
 using ItemReplacer.Managers;
+using ItemReplacer.Patches;
 using ItemReplacer.Utilities;
 
-using Il2CppSLZ.Marrow.Warehouse;
+using MelonLoader;
 
 namespace ItemReplacer
 {
@@ -62,6 +64,14 @@ namespace ItemReplacer
             });
 
             LoggerInstance.Msg("Initialized.");
+        }
+
+        public static string RemoveUnityRichText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            return Regex.Replace(text, "<(.*?)>", string.Empty);
         }
 
         public void OnLevelLoad(LevelInfo info)

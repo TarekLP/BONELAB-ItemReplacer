@@ -49,6 +49,7 @@ namespace ItemReplacer.Managers
         {
             ModPage ??= Page.Root.CreatePage(ModInfo.Name, new Color(0.6f, 0.0f, 0.8f));
             ModPage.CreateBoolPref("Enable Mod", new Color(0, 1, 0), ref PreferencesManager.Enabled);
+            ModPage.CreateBoolPref("Replace Everything", Color.magenta, ref PreferencesManager.ReplaceEverything);
             ModPage.CreateBoolPref("LabFusion Support", Color.cyan, ref PreferencesManager.FusionSupport);
             ReplacersPage ??= ModPage.CreatePage("Replacers", Color.yellow);
             SetupReplacers();

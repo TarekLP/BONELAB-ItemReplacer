@@ -1,18 +1,25 @@
 ﻿using System;
 
+using BoneLib.BoneMenu;
+
+using Il2CppCysharp.Threading.Tasks;
+
+using Il2CppSLZ.Bonelab;
 using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Pool;
 using Il2CppSLZ.Marrow.Warehouse;
 
-using Il2CppCysharp.Threading.Tasks;
+using MelonLoader;
 
-using BoneLib.BoneMenu;
+using UnityEngine;
 
 namespace ItemReplacer.Utilities
 {
     internal static class Fusion
     {
         public static bool HasFusion => Core.FindMelon("LabFusion", "Lakatrazz") != null;
+
+        public static MelonBase LabFusionMelon => Core.FindMelon("LabFusion", "Lakatrazz");
 
         public static bool IsConnected
         {
@@ -22,6 +29,18 @@ namespace ItemReplacer.Utilities
                 else return false;
             }
         }
+
+        public static bool CanUseSpawnGun
+        {
+            get
+            {
+                if (IsConnected) return Internal_CanUseSpawnGun();
+                else return true;
+            }
+        }
+
+        private static bool Internal_CanUseSpawnGun()
+            => !LabFusion.Utilities.FusionDevTools.PreventSpawnGun(LabFusion.Player.PlayerIDManager.LocalID);
 
         internal static void Setup()
         {
@@ -34,13 +53,39 @@ namespace ItemReplacer.Utilities
 
         internal static void Internal_Setup()
         {
-            var melon = Core.FindMelon("LabFusion", "Lakatrazz");
-            melon.HarmonyInstance.Unpatch(typeof(CrateSpawner).GetMethod(nameof(CrateSpawner.SpawnSpawnableAsync)), HarmonyLib.HarmonyPatchType.Prefix, $"{melon.MelonAssembly.Assembly.FullName}:{melon.Info.Name}");
+            RemovePatch(typeof(CrateSpawner), nameof(CrateSpawner.SpawnSpawnableAsync));
+            RemovePatch(typeof(SpawnGun), nameof(SpawnGun.OnFire), HarmonyLib.HarmonyPatchType.Prefix);
+            RemovePatch(typeof(SpawnGun), nameof(SpawnGun.OnFire), HarmonyLib.HarmonyPatchType.Postfix);
         }
+
+        private static void RemovePatch(Type type, string method, HarmonyLib.HarmonyPatchType patchType = HarmonyLib.HarmonyPatchType.Prefix)
+            => LabFusionMelon.HarmonyInstance
+                .Unpatch(type.GetMethod(method),
+                patchType,
+                $"{LabFusionMelon.MelonAssembly.Assembly.FullName}:{LabFusionMelon.Info.Name}");
 
         internal static bool Internal_IsConnected()
         {
             return LabFusion.Network.NetworkInfo.HasServer;
+        }
+
+        public static void SpawnGunSync(Spawnable spawnable, Transform transform)
+        {
+            if (IsConnected) Internal_SpawnGun(spawnable, transform);
+        }
+
+        private static void Internal_SpawnGun(Spawnable spawnable, Transform transform)
+        {
+            var info = new LabFusion.RPC.NetworkAssetSpawner.SpawnRequestInfo()
+            {
+                Spawnable = spawnable,
+                Position = transform.position,
+                Rotation = transform.rotation,
+                SpawnEffect = true,
+                SpawnSource = LabFusion.Entities.EntitySource.Player,
+            };
+
+            LabFusion.RPC.NetworkAssetSpawner.Spawn(info);
         }
 
         public static void NetworkSpawnSpawnable(string barcode, CrateSpawner spawner, UniTaskCompletionSource<Poolee> source)

@@ -32,7 +32,7 @@ namespace ItemReplacer.Patches
             try
             {
                 if (ReplaceItem(__instance, ref __result))
-                    return LabFusion.Marrow.Patching.CrateSpawnerPatches.SpawnSpawnableAsyncPrefix(__instance, isHidden, ref __result);
+                    return FusionPatch(__instance, isHidden, ref __result);
                 else
                     return false;
             }
@@ -88,7 +88,7 @@ namespace ItemReplacer.Patches
             return true;
         }
 
-        private static void FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
+        internal static void FusionSpawn(CrateSpawner __instance, string targetBarcode, out UniTask<Poolee> __result)
         {
             if (Fusion.HandleFusionCrateSpawner(targetBarcode, __instance, out __result))
                 SpawnItem(targetBarcode, __instance.transform.position, __instance.transform.rotation, (p) => HandleSpawner(__instance, p), out __result);
@@ -96,7 +96,13 @@ namespace ItemReplacer.Patches
             ReplacedSuccess();
         }
 
-        private static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, Action<Poolee> callback, out UniTask<Poolee> source)
+        private static bool FusionPatch(CrateSpawner __instance, bool isHidden, ref UniTask<Poolee> __result)
+            => Fusion.HasFusion && Internal_FusionPatch(__instance, isHidden, ref __result);
+
+        private static bool Internal_FusionPatch(CrateSpawner __instance, bool isHidden, ref UniTask<Poolee> __result)
+            => LabFusion.Marrow.Patching.CrateSpawnerPatches.SpawnSpawnableAsyncPrefix(__instance, isHidden, ref __result);
+
+        internal static void SpawnItem(string barcode, Vector3 position, Quaternion rotation, Action<Poolee> callback, out UniTask<Poolee> source)
         {
             var _source = new UniTaskCompletionSource<Poolee>();
             source = new UniTask<Poolee>(_source.TryCast<IUniTaskSource<Poolee>>(), default);
@@ -144,7 +150,7 @@ namespace ItemReplacer.Patches
             }
         }
 
-        private static void ReplacedSuccess()
+        internal static void ReplacedSuccess()
         {
             TotalReplacements++;
             LevelReplacements++;

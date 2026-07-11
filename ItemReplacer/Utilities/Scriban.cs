@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow.Warehouse;
 
+using ItemReplacer.Helpers;
 using ItemReplacer.Managers;
 
 using Scriban;
@@ -26,11 +27,11 @@ namespace ItemReplacer.Utilities
 
         public ScriptArray<string> Tags { get; }
 
-        public ScriptArray<ScribanBoneTag> BoneTags { get; }
+        public ScriptArray<string> BoneTags { get; }
 
-        public ScribanPallet Pallet { get; }
+        public string Pallet { get; }
 
-        public ScribanCrate(Crate crate, ScribanPallet pallet = null)
+        public ScribanCrate(Crate crate)
         {
             Title = crate.Title;
             Description = crate.Description;
@@ -41,29 +42,19 @@ namespace ItemReplacer.Utilities
                 Tags = [];
             else
                 Tags = [.. crate.Tags];
-            Pallet = pallet ?? new ScribanPallet(crate.Pallet);
 
-            if (crate.BoneTags == null || crate.BoneTags.Tags == null)
-            {
-                BoneTags = [];
-            }
-            else
-            {
-                List<ScribanBoneTag> scribanBoneTags = [];
-                crate.BoneTags.Tags.ForEach((Action<BoneTagReference>)(c => scribanBoneTags.Add(new ScribanBoneTag(c.DataCard, Pallet))));
-                BoneTags = [.. scribanBoneTags];
-            }
+            Pallet = crate.Pallet.Barcode.ID;
 
-            if (crate.GetIl2CppType().Name == nameof(SpawnableCrate))
-                Type = CrateType.Spawnable;
-            else if (crate.GetIl2CppType().Name == nameof(AvatarCrate))
-                Type = CrateType.Avatar;
-            else if (crate.GetIl2CppType().Name == nameof(LevelCrate))
-                Type = CrateType.Level;
-            else if (crate.GetIl2CppType().Name == nameof(VFXCrate))
-                Type = CrateType.VFX;
-            else
-                throw new ArgumentOutOfRangeException($"Crate type {crate.GetIl2CppType().Name} is not supported.");
+            BoneTags = [.. crate.BoneTags?.Tags.GetBarcodes<BoneTagReference, DataCard>()];
+
+            Type = crate.GetIl2CppType().Name switch
+            {
+                nameof(SpawnableCrate) => CrateType.Spawnable,
+                nameof(AvatarCrate) => CrateType.Avatar,
+                nameof(LevelCrate) => CrateType.Level,
+                nameof(VFXCrate) => CrateType.VFX,
+                _ => throw new ArgumentOutOfRangeException($"Crate type {crate.GetIl2CppType().Name} is not supported."),
+            };
         }
 
         public enum CrateType
@@ -92,11 +83,11 @@ namespace ItemReplacer.Utilities
 
         public string SDKVersion { get; }
 
-        public ScriptArray<ScribanCrate> Crates { get; }
+        public ScriptArray<string> Crates { get; }
 
         public ScriptArray<ScribanChangeLog> ChangeLogs { get; }
 
-        public ScriptArray<ScribanDataCard> DataCards { get; }
+        public ScriptArray<string> DataCards { get; }
 
         public string[] Dependencies { get; }
 
@@ -111,18 +102,6 @@ namespace ItemReplacer.Utilities
             else
                 Tags = pallet.Tags.ToArray();
             Version = pallet.Version;
-
-            if (pallet.Crates == null)
-            {
-                Crates = [];
-            }
-            else
-            {
-                List<ScribanCrate> scribanCrates = [];
-                pallet.Crates.ForEach((Action<Crate>)(c => scribanCrates.Add(new ScribanCrate(c, this))));
-                Crates = [.. scribanCrates];
-            }
-
             Author = pallet.Author;
             Description = pallet.Description;
             SDKVersion = pallet.SDKVersion;
@@ -139,27 +118,9 @@ namespace ItemReplacer.Utilities
                 ChangeLogs = [.. scribanChangeLogs];
             }
 
-            if (pallet.DataCards == null)
-            {
-                DataCards = [];
-            }
-            else
-            {
-                List<ScribanDataCard> scribanDataCards = [];
-                pallet.DataCards.ForEach((Action<DataCard>)(c => scribanDataCards.Add(new ScribanDataCard(c, this))));
-                DataCards = [.. scribanDataCards];
-            }
-
-            if (pallet.PalletDependencies == null)
-            {
-                Dependencies = [];
-            }
-            else
-            {
-                List<string> dependencies = [];
-                pallet.PalletDependencies.ForEach((Action<PalletReference>)(p => dependencies.Add(p.Barcode.ID)));
-                Dependencies = [.. dependencies];
-            }
+            Crates = [.. pallet.Crates.GetBarcodes()];
+            DataCards = [.. pallet.DataCards.GetBarcodes()];
+            Dependencies = [.. pallet.PalletDependencies.GetBarcodes<PalletReference, Pallet>()];
         }
     }
 
@@ -172,7 +133,7 @@ namespace ItemReplacer.Utilities
         public string Text { get; } = changelog.text;
     }
 
-    public class ScribanDataCard(DataCard dataCard, ScribanPallet pallet = null)
+    public class ScribanDataCard(DataCard dataCard)
     {
         public string Title { get; } = dataCard.Title;
         public string Description { get; } = dataCard.Description;
@@ -183,21 +144,7 @@ namespace ItemReplacer.Utilities
 
         public bool Unlockable { get; } = dataCard.Unlockable;
 
-        public ScribanPallet Pallet { get; } = pallet ?? new ScribanPallet(dataCard.Pallet);
-    }
-
-    public class ScribanBoneTag(BoneTag boneTag, ScribanPallet pallet = null)
-    {
-        public string Title { get; } = boneTag.Title;
-        public string Description { get; } = boneTag.Description;
-
-        public string Barcode { get; } = boneTag.Barcode.ID;
-
-        public bool Redacted { get; } = boneTag.Redacted;
-
-        public bool Unlockable { get; } = boneTag.Unlockable;
-
-        public ScribanPallet Pallet { get; } = pallet ?? new ScribanPallet(boneTag.Pallet);
+        public string Pallet { get; } = dataCard.Pallet.Barcode.ID;
     }
 
     public static class ScribanHelper
@@ -205,11 +152,29 @@ namespace ItemReplacer.Utilities
         public static ScribanPallet GetPallet(string barcode)
         {
             if (AssetWarehouse.Instance.TryGetPallet(new Barcode(barcode), out var pallet))
-            {
                 return new ScribanPallet(pallet);
-            }
+
             return null;
         }
+
+        public static ScribanCrate GetCrate(string barcode)
+        {
+            if (AssetWarehouse.Instance.TryGetCrate(new Barcode(barcode), out var crate))
+                return new ScribanCrate(crate);
+
+            return null;
+        }
+
+        public static ScribanDataCard GetDataCard(string barcode)
+        {
+            if (AssetWarehouse.Instance.TryGetDataCard(new Barcode(barcode), out var dataCard))
+                return new ScribanDataCard(dataCard);
+
+            return null;
+        }
+
+        public static string CleanString(string str)
+            => Core.RemoveUnityRichText(str);
     }
 
     public static class ScribanMatcher
